@@ -34,7 +34,9 @@ async function bootstrap(): Promise<void> {
   if (!ENV.security.skipSecuirity) setupSecurity(app);
   setupSwagger(app);
 
-  await app.listen(ENV.port);
+  const host = '127.0.0.1';
+
+  await app.listen(ENV.port, host);
   console.warn(
     `\n\Entrepreneur News API ===>>\n\nNODE_VERSION: v22.12.0\nNODE_ENV: ${ENV.env}\nRUNNING_ON: ${await app.getUrl()}\nAPI_DOCUMENTATION: ${await app.getUrl()}/docs\n\n`,
   );
