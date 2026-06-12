@@ -9,9 +9,10 @@ import { GalleryWebController } from './controllers/web/gallery.web.controller';
 import { Gallery } from './entities/gallery.entity';
 import { FileUploadService } from './services/fileUpload.service';
 import { GalleryService } from './services/gallery.service';
+import { SupabaseFileUploadService } from './services/supabaseFileUpload.service';
 
 const entities = [Gallery];
-const services = [FileUploadService, GalleryService];
+const services = [FileUploadService, GalleryService, SupabaseFileUploadService];
 const subscribers = [];
 
 const webControllers = [FileStorageWebController, GalleryWebController];
@@ -25,4 +26,4 @@ const modules = [HelpersModule, HttpModule];
   exports: [...services, ...subscribers],
   controllers: [...webControllers, ...internalControllers],
 })
-export class GalleryModule {}
+export class GalleryModule { }

@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { BcryptHelper, EmailHelper } from '@src/app/helpers';
+import { SupabaseUploadHelper } from '@src/app/helpers/supabaseUpload.helper';
 import { IAuthUser, ILginResponse } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
 import { ENV } from '@src/env';
@@ -26,7 +27,6 @@ import { firstValueFrom } from 'rxjs';
 import { DataSource } from 'typeorm';
 import { Role } from '../../acl/entities/role.entity';
 import { RoleService } from '../../acl/services/role.service';
-import { FileUploadService } from '../../gallery/services/fileUpload.service';
 import { GlobalConfigService } from '../../globalConfig/services/globalConfig.service';
 import { EmailService } from '../../notification/services/email.service';
 import { SmsService } from '../../notification/services/sms.service';
@@ -60,7 +60,7 @@ export class AuthService {
     private readonly emailService: EmailService,
     private readonly smsService: SmsService,
     private readonly globalConfigService: GlobalConfigService,
-    private readonly fileUploadService: FileUploadService,
+    private readonly supabaseUploadHelper: SupabaseUploadHelper,
   ) { }
 
   async loginResponse(
@@ -598,7 +598,10 @@ export class AuthService {
 
     if (!user) {
       const avatarUrl = responseData?.picture?.data?.url
-        ? await this.fileUploadService.uploadFacebookProfilePic(responseData?.picture?.data?.url)
+        ? await this.supabaseUploadHelper.downloadAndUploadToSupabase({
+          fileUrl: responseData?.picture?.data?.url,
+          fileName: `${Date.now()}`,
+        })
         : null;
 
       const payloadForNewUser = {
