@@ -1,5 +1,5 @@
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
+import { SupabaseUploadHelper } from '@src/app/helpers/supabaseUpload.helper';
 import { IFileMeta } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
 import { ENV } from '@src/env';
@@ -18,18 +18,8 @@ export interface IFileResponse {
 
 @Injectable()
 export class FileUploadService {
-  constructor() {
-    this.s3 = new S3Client({
-      region: 'auto', // DigitalOcean Spaces doesn't require region
-      endpoint: `https://${ENV.s3.endpoint}`, // DigitalOcean Spaces endpoint
-      credentials: {
-        accessKeyId: ENV.s3.accessKey,
-        secretAccessKey: ENV.s3.secretKey,
-      },
-    });
-  }
+  constructor(private readonly supabaseHelper: SupabaseUploadHelper) { }
 
-  private s3: S3Client;
   BASE = join(process.cwd(), 'uploads/images');
 
   async uploadImage(file: IFileMeta): Promise<IFileResponse> {
@@ -77,33 +67,26 @@ export class FileUploadService {
         .replace(/[^a-z0-9]+/g, '-')   // replace spaces & special chars with "-"
         .replace(/^-+|-+$/g, '');      // remove leading/trailing "-"
 
-      const fileName = `${baseName}-${Date.now()}`;
+      const fileName = `${baseName}-${Date.now()}.${extension}`;
       let folder = data?.folder;
       if (!folder) {
         folder = this.getFolderByMimeType(file);
       }
 
-      const fileStream = await fs.createReadStream(filePath);
-      const fileKey = `${ENV.env}/${ENV.s3.folderPrefix}/${folder}/${fileName}.${extension}`;
-      const command = new PutObjectCommand({
-        Bucket: `${ENV.s3.bucket}`,
-        Key: fileKey,
-        Body: fileStream,
-        ContentType: file.mimetype,
-        ACL: 'public-read',
-      });
+      const fileKey = `${ENV.env}/${folder}/${fileName}`;
+      const fileBuffer = await fs.promises.readFile(filePath);
 
-      const send = await this.s3.send(command);
-      if (send) {
-        const fileUrl = `https://${ENV.s3.endpoint}/${ENV.s3.bucket}/${fileKey}`;
+      const url = await this.supabaseHelper.uploadBinary(folder, fileBuffer, fileName, file.mimetype);
+
+      if (url) {
         try {
-          await fs.unlinkSync(join(process.cwd(), filePath));
+          await fs.promises.unlink(join(process.cwd(), filePath));
         } catch (error) {
-          console.error('🚀 ~ FileUploadService ~ uploadToSpace ~ unlinkSync ~ error:', error);
+          console.error('🚀 ~ FileUploadService ~ uploadToSpace ~ unlink ~ error:', error);
         }
-        return { url: fileUrl, key: fileKey };
+        return { url, key: fileKey };
       } else {
-        console.error('🚀 ~ FileUploadService ~ uploadToSpace ~ send:', send);
+        console.error('🚀 ~ FileUploadService ~ uploadToSpace ~ url:', url);
         return null;
       }
     } catch (error) {
@@ -113,12 +96,7 @@ export class FileUploadService {
   }
 
   async deleteFromSpace(key: string): Promise<void> {
-    const params = {
-      Bucket: ENV.s3.bucket,
-      Key: key,
-    };
-    const command = new DeleteObjectCommand(params);
-    await this.s3.send(command);
+    await this.supabaseHelper.deleteFile(key);
   }
 
   async uploadFacebookProfilePic(imageUrl: string): Promise<string> {
@@ -130,19 +108,11 @@ export class FileUploadService {
     });
 
     // Create unique filename
-    const filename = `profiles/${Date.now()}.jpg`;
+    const fileName = `${Date.now()}.jpg`;
+    const folder = 'profiles';
 
-    // Upload to your Space
-    await this.s3.send(
-      new PutObjectCommand({
-        Bucket: ENV.s3.bucket,
-        Key: filename,
-        Body: response.data,
-        ACL: 'public-read',
-        ContentType: 'image/jpeg',
-      }),
-    );
-    return `https://${ENV.s3.endpoint}/${ENV.s3.bucket}/${filename}`;
+    const url = await this.supabaseHelper.uploadBinary(folder, response.data, fileName, 'image/jpeg');
+    return url;
   }
 
   getFolderByMimeType(file: IFileMeta): string {

@@ -7,4 +7,5 @@ export interface IFileMeta {
   filename: string;
   path: string;
   size: number;
+  buffer?: Buffer;
 }
