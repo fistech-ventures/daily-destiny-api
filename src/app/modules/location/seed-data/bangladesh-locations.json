@@ -1,0 +1,218 @@
+[
+  {
+    "name": "Dhaka",
+    "nameBn": "ঢাকা",
+    "slug": "dhaka",
+    "type": "division",
+    "parentSlug": null,
+    "position": 1
+  },
+  {
+    "name": "Chittagong",
+    "nameBn": "চট্টগ্রাম",
+    "slug": "chittagong",
+    "type": "division",
+    "parentSlug": null,
+    "position": 2
+  },
+  {
+    "name": "Khulna",
+    "nameBn": "খুলনা",
+    "slug": "khulna",
+    "type": "division",
+    "parentSlug": null,
+    "position": 3
+  },
+  {
+    "name": "Rajshahi",
+    "nameBn": "রাজশাহী",
+    "slug": "rajshahi",
+    "type": "division",
+    "parentSlug": null,
+    "position": 4
+  },
+  {
+    "name": "Barisal",
+    "nameBn": "বরিশাল",
+    "slug": "barisal",
+    "type": "division",
+    "parentSlug": null,
+    "position": 5
+  },
+  {
+    "name": "Sylhet",
+    "nameBn": "সিলেট",
+    "slug": "sylhet",
+    "type": "division",
+    "parentSlug": null,
+    "position": 6
+  },
+  {
+    "name": "Rangpur",
+    "nameBn": "রংপুর",
+    "slug": "rangpur",
+    "type": "division",
+    "parentSlug": null,
+    "position": 7
+  },
+  {
+    "name": "Mymensingh",
+    "nameBn": "ময়মনসিংহ",
+    "slug": "mymensingh",
+    "type": "division",
+    "parentSlug": null,
+    "position": 8
+  },
+  {
+    "name": "Dhaka District",
+    "nameBn": "ঢাকা জেলা",
+    "slug": "dhaka-district",
+    "type": "district",
+    "parentSlug": "dhaka",
+    "position": 1
+  },
+  {
+    "name": "Narayanganj",
+    "nameBn": "নারায়ণগঞ্জ",
+    "slug": "narayanganj",
+    "type": "district",
+    "parentSlug": "dhaka",
+    "position": 2
+  },
+  {
+    "name": "Gazipur",
+    "nameBn": "গাজীপুর",
+    "slug": "gazipur",
+    "type": "district",
+    "parentSlug": "dhaka",
+    "position": 3
+  },
+  {
+    "name": "Tangail",
+    "nameBn": "টাঙ্গাইল",
+    "slug": "tangail",
+    "type": "district",
+    "parentSlug": "dhaka",
+    "position": 4
+  },
+  {
+    "name": "Narsingdi",
+    "nameBn": "নরসিংদী",
+    "slug": "narsingdi",
+    "type": "district",
+    "parentSlug": "dhaka",
+    "position": 5
+  },
+  {
+    "name": "Faridpur",
+    "nameBn": "ফরিদপুর",
+    "slug": "faridpur",
+    "type": "district",
+    "parentSlug": "dhaka",
+    "position": 6
+  },
+  {
+    "name": "Rajbari",
+    "nameBn": "রাজবাড়ি",
+    "slug": "rajbari",
+    "type": "district",
+    "parentSlug": "dhaka",
+    "position": 7
+  },
+  {
+    "name": "Manikganj",
+    "nameBn": "মানিকগঞ্জ",
+    "slug": "manikganj",
+    "type": "district",
+    "parentSlug": "dhaka",
+    "position": 8
+  },
+  {
+    "name": "Munshiganj",
+    "nameBn": "মুন্সিগঞ্জ",
+    "slug": "munshiganj",
+    "type": "district",
+    "parentSlug": "dhaka",
+    "position": 9
+  },
+  {
+    "name": "Dhaka Sadar",
+    "nameBn": "ঢাকা সদর",
+    "slug": "dhaka-sadar",
+    "type": "upazilla",
+    "parentSlug": "dhaka-district",
+    "position": 1
+  },
+  {
+    "name": "Motijheel",
+    "nameBn": "মতিঝিল",
+    "slug": "motijheel",
+    "type": "union",
+    "parentSlug": "dhaka-sadar",
+    "position": 1
+  },
+  {
+    "name": "Shahbag",
+    "nameBn": "শাহবাগ",
+    "slug": "shahbag",
+    "type": "union",
+    "parentSlug": "dhaka-sadar",
+    "position": 2
+  },
+  {
+    "name": "Dhanmondi",
+    "nameBn": "ধানমণ্ডি",
+    "slug": "dhanmondi",
+    "type": "union",
+    "parentSlug": "dhaka-sadar",
+    "position": 3
+  },
+  {
+    "name": "Adabor",
+    "nameBn": "আদাবর",
+    "slug": "adabor",
+    "type": "union",
+    "parentSlug": "dhaka-sadar",
+    "position": 4
+  },
+  {
+    "name": "Mirpur",
+    "nameBn": "মিরপুর",
+    "slug": "mirpur",
+    "type": "union",
+    "parentSlug": "dhaka-sadar",
+    "position": 5
+  },
+  {
+    "name": "Savar",
+    "nameBn": "সাভার",
+    "slug": "savar",
+    "type": "upazilla",
+    "parentSlug": "dhaka-district",
+    "position": 2
+  },
+  {
+    "name": "Keraniganj",
+    "nameBn": "কেরানীগঞ্জ",
+    "slug": "keraniganj",
+    "type": "upazilla",
+    "parentSlug": "dhaka-district",
+    "position": 3
+  },
+  {
+    "name": "Narayanganj District",
+    "nameBn": "নারায়ণগঞ্জ জেলা",
+    "slug": "narayanganj-district",
+    "type": "upazilla",
+    "parentSlug": "narayanganj",
+    "position": 1
+  },
+  {
+    "name": "Gazipur Sadar",
+    "nameBn": "গাজীপুর সদর",
+    "slug": "gazipur-sadar",
+    "type": "upazilla",
+    "parentSlug": "gazipur",
+    "position": 1
+  }
+]
