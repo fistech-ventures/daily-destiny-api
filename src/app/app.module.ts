@@ -17,11 +17,12 @@ import { CommonModule } from './modules/common/common.module';
 import { EntrepreneurModule } from './modules/entrepreneur/entrepreneur.module';
 import { GalleryModule } from './modules/gallery/gallery.module';
 import { LocationModule } from './modules/location/location.module';
+import { MarketPriceModule } from './modules/marketPrice/marketPrice.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { OpinionModule } from './modules/opinion/opinion.module';
 import { UserModule } from './modules/user/user.module';
 import { UniqueValidatorPipe } from './pipes/uniqueValidator.pipe';
-import { MarketPriceModule } from './modules/marketPrice/marketPrice.module';
+import { EpaperModule } from './modules/epaper/epaper.module';
 
 const MODULES = [
   DatabaseModule,
@@ -41,7 +42,8 @@ const MODULES = [
   EntrepreneurModule,
   CMSModule,
   AdModule,
-  MarketPriceModule
+  MarketPriceModule,
+  EpaperModule,
 ];
 const PIPES = [UniqueValidatorPipe];
 
@@ -68,4 +70,4 @@ const PIPES = [UniqueValidatorPipe];
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
