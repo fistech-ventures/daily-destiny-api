@@ -108,6 +108,49 @@ export class LocationService extends BaseService<Location> {
   }
 
   /**
+   * Override findAllBase to properly handle parentId filtering for tree entities
+   */
+  async findAllBase(
+    filters: any & {
+      searchTerm?: string;
+      limit?: number;
+      page?: number;
+      sortBy?: string;
+      sortOrder?: 'ASC' | 'DESC';
+      sort?: any[];
+      parentId?: string;
+    },
+    options?: any,
+  ): Promise<SuccessResponse<Location[]>> {
+    const { parentId, limit, page, sortBy, sortOrder, sort, searchTerm, ...whereFilters } = filters;
+
+    const where: any = { ...whereFilters };
+    if (parentId !== undefined) {
+      where.parentId = parentId;
+    }
+
+    const opts: any = {
+      where,
+    };
+
+    if (limit) opts.take = limit;
+    if (page) opts.skip = (page - 1) * (limit || 20);
+    if (options?.relations) opts.relations = options.relations;
+    if (sortBy && sortOrder) {
+      opts.order = { [sortBy]: sortOrder };
+    }
+
+    const [data, total] = await this._repo.findAndCount(opts);
+
+    return new SuccessResponse<Location[]>('Locations fetched successfully', data, {
+      total,
+      page: page || 1,
+      limit: limit || 20,
+      skip: opts.skip || 0,
+    });
+  }
+
+  /**
    * Get direct children of a location (for cascading dropdowns)
    */
   async getChildren(parentId: string): Promise<Location[]> {

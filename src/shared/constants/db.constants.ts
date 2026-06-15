@@ -40,6 +40,7 @@ export enum ENUM_TABLE_NAMES {
   STARTUP_FOUNDERS = 'startup_founders',
   ADS = 'ads',
   AD_REQUESTS = 'ad_requests',
+  EPAPERS = 'epapers',
 
   // cms
   MENUS = 'menus',
