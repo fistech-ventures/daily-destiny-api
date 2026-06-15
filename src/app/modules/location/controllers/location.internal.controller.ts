@@ -3,26 +3,25 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthUser } from '@src/app/decorators';
 import { IAuthUser } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
-import { Location } from '../entities/location.entity';
-import { LocationService } from '../services/location.service';
 import {
   LocationCreateDTO,
-  LocationUpdateDTO,
   LocationFilterDTO,
   LocationSeedDTO,
+  LocationUpdateDTO,
 } from '../dtos';
+import { Location } from '../entities/location.entity';
+import { LocationService } from '../services/location.service';
 
 @ApiTags('Location')
 @ApiBearerAuth()
 @Controller('internal/locations')
 export class LocationInternalController {
-  constructor(private readonly service: LocationService) {}
+  constructor(private readonly service: LocationService) { }
 
   @Get()
   @ApiOperation({ summary: 'Get all locations with filters' })
   async findAll(@Query() query: LocationFilterDTO): Promise<SuccessResponse<Location[]>> {
-    query['isActive'] = true;
-    return this.service.findAllBase(query, { relations: { parent: true } });
+    return this.service.findAllBase({ ...query, isActive: true }, { relations: { parent: true } });
   }
 
   @Get(':id')
