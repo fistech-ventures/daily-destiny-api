@@ -45,26 +45,6 @@ export class EpaperUpdateDTO {
   @ApiProperty({
     type: String,
     required: false,
-    example: 'https://example.com/epaper-thumbnail.jpg',
-    description: 'URL of the thumbnail image',
-  })
-  @IsOptional()
-  @IsString()
-  readonly thumbnailUrl?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    example: 'epaper/2024-01-15/thumbnail-page-1.jpg',
-    description: 'Storage key for the thumbnail image',
-  })
-  @IsOptional()
-  @IsString()
-  readonly thumbnailKey?: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
     example: 'Daily Prothom Alo',
     description: 'Name of the publication',
   })

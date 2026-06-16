@@ -1,8 +1,8 @@
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ENV } from '@src/env';
 import { mimeTypeMapping } from '@src/shared/constants/mimeTypes.constants';
-import { HttpService } from '@nestjs/axios';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { firstValueFrom } from 'rxjs';
 import { Readable } from 'stream';
 
@@ -69,7 +69,7 @@ export class SupabaseUploadHelper {
       });
 
       const mediaData = await firstValueFrom(mediaResponse);
-      const contentType = mediaData.headers['content-type'];
+      const contentType = mediaData.headers['content-type'] as string;
       const extension = mimeTypeMapping[contentType] || 'jpg';
       const fileName = `${payload.fileName}.${extension}` || `${Date.now()}.${extension}`;
       const binary = mediaData.data;
@@ -95,7 +95,7 @@ export class SupabaseUploadHelper {
       });
 
       const mediaData = await firstValueFrom(mediaResponse);
-      const contentType = mediaData.headers['content-type'];
+      const contentType = mediaData.headers['content-type'] as string;
       const extension = mimeTypeMapping[contentType] || 'jpg';
       const fileName = `${payload.fileName}.${extension}` || `${Date.now()}.${extension}`;
       const binary = mediaData.data;
@@ -121,7 +121,7 @@ export class SupabaseUploadHelper {
       });
 
       const mediaData = await firstValueFrom(mediaResponse);
-      const contentType = mediaData.headers['content-type'];
+      const contentType = mediaData.headers['content-type'] as string;
       const extension = mimeTypeMapping[contentType] || 'jpg';
       const fileName = `${payload.fileName}.${extension}` || `${Date.now()}.${extension}`;
       const binary = mediaData.data;

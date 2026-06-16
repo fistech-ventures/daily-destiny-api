@@ -4,7 +4,9 @@ import { BaseService } from '@src/app/base';
 import { IAuthUser } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
 import { Between, Repository } from 'typeorm';
-import { EpaperCreateDTO, EpaperUpdateDTO } from '../dtos';
+import { EpaperBulkUploadDTO } from '../dtos/epaper.bulk-upload.dto';
+import { EpaperCreateDTO } from '../dtos/epaper.create.dto';
+import { EpaperUpdateDTO } from '../dtos/epaper.update.dto';
 import { Epaper } from '../entities/epaper.entity';
 
 @Injectable()
@@ -153,5 +155,47 @@ export class EpaperService extends BaseService<Epaper> {
 
     const result = await queryBuilder.orderBy('epaper.date', 'DESC').getRawMany();
     return result.map((r) => r.date);
+  }
+
+  async bulkUpload(payload: EpaperBulkUploadDTO, authUser: IAuthUser): Promise<SuccessResponse<Epaper[]>> {
+    const { date, publicationName, pages } = payload;
+    const epaperDate = new Date(date);
+
+    // Check if pages already exist for this date and publication
+    const existingPages = await this._repo.find({
+      where: {
+        date: epaperDate,
+        publicationName,
+      },
+    });
+
+    const existingPageNumbers = new Set(existingPages.map((e) => e.pageNumber));
+
+    // Filter out pages that already exist
+    const newPages = pages.filter((page) => !existingPageNumbers.has(page.pageNumber));
+
+    if (newPages.length === 0) {
+      throw new Error('All pages for this date and publication already exist');
+    }
+
+    // Create e-paper records for new pages
+    const epapers = newPages.map((page) =>
+      this._repo.create({
+        date: epaperDate,
+        pageNumber: page.pageNumber,
+        imageUrl: page.imageUrl,
+        imageKey: page.imageKey,
+        publicationName,
+        title: page.title,
+        mimetype: page.mimetype,
+        extension: page.extension,
+        fileSize: page.fileSize,
+        createdBy: authUser,
+      }),
+    );
+
+    const saved = await this._repo.save(epapers);
+
+    return new SuccessResponse<Epaper[]>('E-papers bulk uploaded successfully', saved);
   }
 }

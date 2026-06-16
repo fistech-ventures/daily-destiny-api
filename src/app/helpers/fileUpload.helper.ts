@@ -61,7 +61,7 @@ export class FileUploadHelper {
       });
 
       const mediaData = await firstValueFrom(mediaResponse);
-      const contentType = mediaData.headers['content-type'];
+      const contentType = mediaData.headers['content-type'] as string;
       const extension = mimeTypeMapping[contentType] || 'jpg';
       const s3Key = `${payload.fileName}.${extension}` || `${Date.now()}.${extension}`;
       const binary = mediaData.data;
@@ -87,7 +87,7 @@ export class FileUploadHelper {
       });
 
       const mediaData = await firstValueFrom(mediaResponse);
-      const contentType = mediaData.headers['content-type'];
+      const contentType = mediaData.headers['content-type'] as string;
       const extension = mimeTypeMapping[contentType] || 'jpg';
       const s3Key = `${payload.fileName}.${extension}` || `${Date.now()}.${extension}`;
       const binary = mediaData.data;
@@ -113,7 +113,7 @@ export class FileUploadHelper {
       });
 
       const mediaData = await firstValueFrom(mediaResponse);
-      const contentType = mediaData.headers['content-type'];
+      const contentType = mediaData.headers['content-type'] as string;
       const extension = mimeTypeMapping[contentType] || 'jpg';
       const s3Key = `${payload.fileName}.${extension}` || `${Date.now()}.${extension}`;
       const binary = mediaData.data;
