@@ -3,7 +3,10 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthUser } from '@src/app/decorators';
 import { IAuthUser } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
-import { EpaperCreateDTO, EpaperFilterDTO, EpaperUpdateDTO } from '../../dtos';
+import { EpaperBulkUploadDTO } from '../../dtos/epaper.bulk-upload.dto';
+import { EpaperCreateDTO } from '../../dtos/epaper.create.dto';
+import { EpaperFilterDTO } from '../../dtos/epaper.filter.dto';
+import { EpaperUpdateDTO } from '../../dtos/epaper.update.dto';
 import { Epaper } from '../../entities/epaper.entity';
 import { EpaperService } from '../../services/epaper.service';
 
@@ -63,6 +66,15 @@ export class EpaperInternalController {
     @AuthUser() authUser: IAuthUser,
   ): Promise<Epaper> {
     return this.service.createOne(body, authUser);
+  }
+
+  @Post('bulk-upload')
+  @ApiOperation({ summary: 'Bulk upload multiple pages for a specific date' })
+  async bulkUpload(
+    @Body() body: EpaperBulkUploadDTO,
+    @AuthUser() authUser: IAuthUser,
+  ): Promise<SuccessResponse<Epaper[]>> {
+    return this.service.bulkUpload(body, authUser);
   }
 
   @Patch(':id')

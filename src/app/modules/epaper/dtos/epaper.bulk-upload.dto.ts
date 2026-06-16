@@ -1,26 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, IsArray } from 'class-validator';
 
-export class EpaperCreateDTO {
-  @ApiProperty({
-    type: String,
-    required: true,
-    example: '2024-01-15',
-    description: 'Date of the e-paper publication',
-  })
-  @IsNotEmpty()
-  @IsDateString()
-  readonly date!: string;
-
+export class EpaperPageDTO {
   @ApiProperty({
     type: Number,
     required: true,
     example: 1,
-    description: 'Page number of the e-paper',
+    description: 'Page number',
   })
   @IsNotEmpty()
   @IsNumber()
-  readonly pageNumber!: number;
+  pageNumber!: number;
 
   @ApiProperty({
     type: String,
@@ -30,17 +20,69 @@ export class EpaperCreateDTO {
   })
   @IsNotEmpty()
   @IsString()
-  readonly imageUrl!: string;
+  imageUrl!: string;
 
   @ApiProperty({
     type: String,
     required: true,
-    example: 'epaper/2024-01-15/page-1.jpg',
+    example: 'epaper/2024-06-16/page-1.jpg',
     description: 'Storage key for the e-paper image',
   })
   @IsNotEmpty()
   @IsString()
-  readonly imageKey!: string;
+  imageKey!: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    example: 'Front Page',
+    description: 'Title or description of the page',
+  })
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @ApiProperty({
+    type: String,
+    required: true,
+    example: 'image/jpeg',
+    description: 'MIME type of the image',
+  })
+  @IsNotEmpty()
+  @IsString()
+  mimetype!: string;
+
+  @ApiProperty({
+    type: String,
+    required: true,
+    example: 'jpg',
+    description: 'File extension',
+  })
+  @IsNotEmpty()
+  @IsString()
+  extension!: string;
+
+  @ApiProperty({
+    type: Number,
+    required: false,
+    example: 2048576,
+    description: 'File size in bytes',
+  })
+  @IsOptional()
+  @IsNumber()
+  fileSize?: number;
+}
+
+export class EpaperBulkUploadDTO {
+  @ApiProperty({
+    type: String,
+    required: true,
+    example: '2024-06-16',
+    description: 'Date of the e-paper publication',
+  })
+  @IsNotEmpty()
+  @IsDateString()
+  readonly date!: string;
 
   @ApiProperty({
     type: String,
@@ -53,42 +95,11 @@ export class EpaperCreateDTO {
   readonly publicationName!: string;
 
   @ApiProperty({
-    type: String,
-    required: false,
-    example: 'Front Page',
-    description: 'Title or description of the page',
-  })
-  @IsOptional()
-  @IsString()
-  readonly title?: string;
-
-  @ApiProperty({
-    type: String,
+    type: [EpaperPageDTO],
     required: true,
-    example: 'image/jpeg',
-    description: 'MIME type of the image',
+    description: 'Array of pages to upload',
   })
   @IsNotEmpty()
-  @IsString()
-  readonly mimetype!: string;
-
-  @ApiProperty({
-    type: String,
-    required: true,
-    example: 'jpg',
-    description: 'File extension',
-  })
-  @IsNotEmpty()
-  @IsString()
-  readonly extension!: string;
-
-  @ApiProperty({
-    type: Number,
-    required: false,
-    example: 2048576,
-    description: 'File size in bytes',
-  })
-  @IsOptional()
-  @IsNumber()
-  readonly fileSize?: number;
+  @IsArray()
+  readonly pages!: EpaperPageDTO[];
 }

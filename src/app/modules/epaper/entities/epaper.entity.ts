@@ -18,12 +18,6 @@ export class Epaper extends BaseEntity {
   @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, length: 255, nullable: false })
   imageKey?: string;
 
-  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, length: 255, nullable: true })
-  thumbnailUrl?: string;
-
-  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, length: 255, nullable: true })
-  thumbnailKey?: string;
-
   @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, length: 255, nullable: false })
   publicationName?: string;
 
