@@ -34,11 +34,11 @@ export class LocationSeedItemDTO {
     type: String,
     required: true,
     example: 'division',
-    enum: ['division', 'district', 'upazilla', 'union', 'city_corporation', 'pourosova'],
+    enum: ['country', 'division', 'district', 'upazilla', 'union', 'city_corporation', 'pourosova'],
   })
   @IsNotEmpty()
   @IsString()
-  @IsEnum(['division', 'district', 'upazilla', 'union', 'city_corporation', 'pourosova'])
+  @IsEnum(['country', 'division', 'district', 'upazilla', 'union', 'city_corporation', 'pourosova'])
   type!: string;
 
   @ApiProperty({
