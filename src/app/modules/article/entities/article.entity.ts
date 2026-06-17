@@ -7,9 +7,9 @@ import { Column, Entity, ManyToOne, OneToMany, RelationId } from 'typeorm';
 import { Author } from '../../author/entities/author.entity';
 import { Category } from '../../category/entities/category.entity';
 import { SubCategory } from '../../category/entities/subCategory.entity';
+import { ArticleLocation } from '../../location/entities/articleLocation.entity';
 import { ENUM_ARTICLE_STATUS } from '../const';
 import { ArticleMedia } from './articleMedia.entity';
-import { ArticleLocation } from '../../location/entities/articleLocation.entity';
 
 @Entity(ENUM_TABLE_NAMES.ARTICLES, { orderBy: { createdAt: 'DESC' } })
 export class Article extends BaseEntity {
@@ -21,7 +21,7 @@ export class Article extends BaseEntity {
   @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, nullable: true, unique: true })
   code?: string;
 
-  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, nullable: false })
+  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, nullable: false, unique: true })
   slug?: string;
 
   @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, nullable: false })
