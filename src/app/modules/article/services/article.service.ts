@@ -284,9 +284,10 @@ export class ArticleService extends BaseService<Article> {
     authUser: IAuthUser
   ): Promise<any> {
     const articleData = await this.isExist({ id });
-    const { metaTitle, metaDescription, metaImage, metaKeywords = [], locations = [], divisionId, districtId, upazillaId } = payload
-    payload['updatedBy'] = authUser;
-    payload['seoMetaData'] = { title: metaTitle, description: metaDescription, image: metaImage, keywords: metaKeywords };
+    const { metaTitle, metaDescription, metaImage, metaKeywords = [], locations = [], divisionId, districtId, upazillaId, ...restPayload } = payload
+    const updateData = { ...restPayload };
+    updateData['updatedBy'] = authUser;
+    updateData['seoMetaData'] = { title: metaTitle, description: metaDescription, image: metaImage, keywords: metaKeywords };
 
     // Handle hierarchical location IDs
     const finalLocations = [...locations];
@@ -300,25 +301,25 @@ export class ArticleService extends BaseService<Article> {
       finalLocations.push({ locationId: upazillaId, isPrimary: false });
     }
 
-    if (payload?.status && !Object.values(ENUM_ARTICLE_STATUS).includes(payload?.status)) {
+    if (updateData?.status && !Object.values(ENUM_ARTICLE_STATUS).includes(updateData?.status)) {
       throw new BadRequestException(`Invalid status!`);
     }
 
-    if (payload?.status && payload?.status === articleData.status) {
-      throw new BadRequestException(`Status already ${payload.status}!`);
+    if (updateData?.status && updateData?.status === articleData.status) {
+      throw new BadRequestException(`Status already ${updateData.status}!`);
     }
 
-    if (payload?.status && payload?.status === ENUM_ARTICLE_STATUS.PUBLISHED) {
-      payload['publishedBy'] = authUser;
-      payload['publishedAt'] = new Date();
+    if (updateData?.status && updateData?.status === ENUM_ARTICLE_STATUS.PUBLISHED) {
+      updateData['publishedBy'] = authUser;
+      updateData['publishedAt'] = new Date();
     }
 
-    if (payload?.status && payload?.status === ENUM_ARTICLE_STATUS.ARCHIVED) {
-      payload['archivedBy'] = authUser;
-      payload['archivedAt'] = new Date();
+    if (updateData?.status && updateData?.status === ENUM_ARTICLE_STATUS.ARCHIVED) {
+      updateData['archivedBy'] = authUser;
+      updateData['archivedAt'] = new Date();
     }
 
-    const { medias = [], tags = [], ...restData } = payload;
+    const { medias = [], tags = [] } = payload;
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -367,7 +368,9 @@ export class ArticleService extends BaseService<Article> {
         await this.handleArticleLocations(queryRunner, id, finalLocations);
       }
 
-      await queryRunner.manager.update(Article, { id }, { ...restData });
+      const articleToUpdate = await queryRunner.manager.findOne(Article, { where: { id } });
+      Object.assign(articleToUpdate, updateData);
+      await queryRunner.manager.save(articleToUpdate);
 
       if (medias && medias.length > 0) {
         const deletedItems = medias.filter((media) => media.isDeleted);

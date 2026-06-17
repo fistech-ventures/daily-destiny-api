@@ -305,7 +305,7 @@ export class ArticleUpdateDTO {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'news short title',
   })
   @IsOptional()
@@ -313,7 +313,7 @@ export class ArticleUpdateDTO {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'news short details',
   })
   @IsOptional()

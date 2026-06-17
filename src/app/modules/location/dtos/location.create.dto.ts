@@ -43,7 +43,6 @@ export class LocationCreateDTO {
     type: String,
     required: false,
     description: 'Parent location UUID (required for all except divisions)',
-    example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @IsOptional()
   @IsUUID()
@@ -56,4 +55,12 @@ export class LocationCreateDTO {
   })
   @IsOptional()
   readonly position?: number;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+    example: true,
+  })
+  @IsOptional()
+  readonly isActive?: boolean;
 }
