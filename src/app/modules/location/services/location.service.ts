@@ -4,7 +4,7 @@ import { BaseService } from '@src/app/base';
 import { IAuthUser } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
 import { ENUM_LOCATION_TYPE } from '@src/shared/enums/common.enums';
-import { Repository, TreeRepository } from 'typeorm';
+import { ILike, Repository, TreeRepository } from 'typeorm';
 import { LOCATION_TYPE_HIERARCHY } from '../const';
 import { LocationCreateDTO, LocationSeedDTO, LocationUpdateDTO } from '../dtos';
 import { Location } from '../entities/location.entity';
@@ -42,8 +42,11 @@ export class LocationService extends BaseService<Location> {
       this.validateHierarchy(payload.type);
     }
 
+    // Create location with parent entity object for nested-set tree
+    const { parentId, ...locationData } = payload;
     const location = this._repo.create({
-      ...payload,
+      ...locationData,
+      parent: parentLocation,
       createdBy: authUser,
     });
 
@@ -127,6 +130,51 @@ export class LocationService extends BaseService<Location> {
     const where: any = { ...whereFilters };
     if (parentId !== undefined) {
       where.parentId = parentId;
+    }
+
+    // Handle searchTerm filtering
+    if (searchTerm && Location.SEARCH_TERMS) {
+      let searchTerms = Location.SEARCH_TERMS;
+
+      // Filter out search terms that are already in whereFilters
+      if (Object.keys(whereFilters).length) {
+        searchTerms = searchTerms.filter(
+          (term: string) => !Object.keys(whereFilters).includes(term),
+        );
+      }
+
+      // Build OR conditions for search
+      const searchConditions = [];
+      for (const term of searchTerms) {
+        searchConditions.push({
+          ...where,
+          [term]: ILike(`%${searchTerm}%`),
+        });
+      }
+
+      // If we have search conditions, use them as the where clause
+      if (searchConditions.length > 0) {
+        // Use TypeORM's OR condition
+        const opts: any = {
+          where: searchConditions,
+        };
+
+        if (limit) opts.take = limit;
+        if (page) opts.skip = (page - 1) * (limit || 20);
+        if (options?.relations) opts.relations = options.relations;
+        if (sortBy && sortOrder) {
+          opts.order = { [sortBy]: sortOrder };
+        }
+
+        const [data, total] = await this._repo.findAndCount(opts);
+
+        return new SuccessResponse<Location[]>('Locations fetched successfully', data, {
+          total,
+          page: page || 1,
+          limit: limit || 20,
+          skip: opts.skip || 0,
+        });
+      }
     }
 
     const opts: any = {
