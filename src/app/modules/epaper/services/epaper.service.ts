@@ -32,7 +32,55 @@ export class EpaperService extends BaseService<Epaper> {
   async updateOne(id: string, payload: EpaperUpdateDTO, authUser: IAuthUser): Promise<Epaper> {
     const epaper = await this.isExist({ id } as Epaper);
 
+    // Handle adding new pages
+    if (payload.pages && payload.pages.length > 0) {
+      const { pages, ...updateData } = payload;
+
+      // Get the date and publication name from the existing epaper or the update data
+      const epaperDate = updateData.date ? new Date(updateData.date) : epaper.date;
+      const publicationName = updateData.publicationName || epaper.publicationName;
+
+      // Normalize date to start of day
+      epaperDate.setHours(0, 0, 0, 0);
+
+      // Check if pages already exist for this date and publication
+      const existingPages = await this._repo.find({
+        where: {
+          date: epaperDate,
+          publicationName,
+        },
+      });
+
+      const existingPageNumbers = new Set(existingPages.map((e) => e.pageNumber));
+
+      // Filter out pages that already exist
+      const newPages = pages.filter((page) => !existingPageNumbers.has(page.pageNumber));
+
+      if (newPages.length > 0) {
+        // Create e-paper records for new pages
+        const newEpapers = newPages.map((page) =>
+          this._repo.create({
+            date: epaperDate,
+            pageNumber: page.pageNumber,
+            imageUrl: page.imageUrl,
+            imageKey: page.imageKey,
+            publicationName,
+            title: page.title,
+            mimetype: page.mimetype,
+            extension: page.extension,
+            fileSize: page.fileSize,
+            createdBy: authUser,
+          }),
+        );
+
+        await this._repo.save(newEpapers);
+      }
+    }
+
+    // Update the existing epaper record
     const updateData: any = { ...payload };
+    delete updateData.pages; // Remove pages from update data as it's handled separately
+
     if (payload.date) {
       updateData.date = new Date(payload.date);
     }
@@ -160,6 +208,7 @@ export class EpaperService extends BaseService<Epaper> {
   async bulkUpload(payload: EpaperBulkUploadDTO, authUser: IAuthUser): Promise<SuccessResponse<Epaper[]>> {
     const { date, publicationName, pages } = payload;
     const epaperDate = new Date(date);
+    epaperDate.setHours(0, 0, 0, 0); // Normalize to start of day
 
     // Check if pages already exist for this date and publication
     const existingPages = await this._repo.find({
@@ -196,6 +245,13 @@ export class EpaperService extends BaseService<Epaper> {
 
     const saved = await this._repo.save(epapers);
 
-    return new SuccessResponse<Epaper[]>('E-papers bulk uploaded successfully', saved);
+    // Return success message with information about skipped pages
+    const skippedCount = pages.length - newPages.length;
+    let message = 'E-papers bulk uploaded successfully';
+    if (skippedCount > 0) {
+      message += ` (${skippedCount} page(s) skipped as they already exist)`;
+    }
+
+    return new SuccessResponse<Epaper[]>(message, saved);
   }
 }
