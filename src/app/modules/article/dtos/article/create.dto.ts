@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, ValidateNested, IsUUID } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { ENUM_ARTICLE_LANGUAGE, ENUM_ARTICLE_STATUS } from '../../const';
 
 export class ArticleLocationCreateDTO {
@@ -248,6 +248,33 @@ export class ArticleCreateDTO {
   @Type(() => ArticleLocationCreateDTO)
   @IsOptional()
   readonly locations?: ArticleLocationCreateDTO[];
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'Division UUID for hierarchical location assignment',
+  })
+  @IsOptional()
+  @IsUUID()
+  readonly divisionId?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'District UUID for hierarchical location assignment',
+  })
+  @IsOptional()
+  @IsUUID()
+  readonly districtId?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'Upazilla UUID for hierarchical location assignment',
+  })
+  @IsOptional()
+  @IsUUID()
+  readonly upazillaId?: string;
 
   @ApiProperty({
     type: [ArticleMediaCreateDTO],

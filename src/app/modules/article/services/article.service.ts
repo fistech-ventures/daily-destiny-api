@@ -34,10 +34,22 @@ export class ArticleService extends BaseService<Article> {
     await queryRunner.startTransaction();
 
     try {
-      const { medias = [], locations = [], metaTitle, metaDescription, metaImage, metaKeywords = [], ...data } = payload
+      const { medias = [], locations = [], metaTitle, metaDescription, metaImage, metaKeywords = [], divisionId, districtId, upazillaId, ...data } = payload
       data['code'] = await this.generateUniqueArticleCode(queryRunner);
       data['createdBy'] = authUser;
       data['seoMetaData'] = { title: metaTitle, description: metaDescription, image: metaImage, keywords: metaKeywords };
+
+      // Handle hierarchical location IDs
+      const finalLocations = [...locations];
+      if (divisionId) {
+        finalLocations.push({ locationId: divisionId, isPrimary: false });
+      }
+      if (districtId) {
+        finalLocations.push({ locationId: districtId, isPrimary: false });
+      }
+      if (upazillaId) {
+        finalLocations.push({ locationId: upazillaId, isPrimary: false });
+      }
 
       // 1. extract tags
 
@@ -80,8 +92,8 @@ export class ArticleService extends BaseService<Article> {
       }
 
       // Handle article locations
-      if (locations && locations.length > 0) {
-        await this.handleArticleLocations(queryRunner, saved.id, locations);
+      if (finalLocations && finalLocations.length > 0) {
+        await this.handleArticleLocations(queryRunner, saved.id, finalLocations);
       }
 
       // 5. batch upsert tags
@@ -272,9 +284,21 @@ export class ArticleService extends BaseService<Article> {
     authUser: IAuthUser
   ): Promise<any> {
     const articleData = await this.isExist({ id });
-    const { metaTitle, metaDescription, metaImage, metaKeywords = [], locations = [] } = payload
+    const { metaTitle, metaDescription, metaImage, metaKeywords = [], locations = [], divisionId, districtId, upazillaId } = payload
     payload['updatedBy'] = authUser;
     payload['seoMetaData'] = { title: metaTitle, description: metaDescription, image: metaImage, keywords: metaKeywords };
+
+    // Handle hierarchical location IDs
+    const finalLocations = [...locations];
+    if (divisionId) {
+      finalLocations.push({ locationId: divisionId, isPrimary: false });
+    }
+    if (districtId) {
+      finalLocations.push({ locationId: districtId, isPrimary: false });
+    }
+    if (upazillaId) {
+      finalLocations.push({ locationId: upazillaId, isPrimary: false });
+    }
 
     if (payload?.status && !Object.values(ENUM_ARTICLE_STATUS).includes(payload?.status)) {
       throw new BadRequestException(`Invalid status!`);
@@ -339,8 +363,8 @@ export class ArticleService extends BaseService<Article> {
       }
 
       // Handle article locations
-      if (locations && locations.length > 0) {
-        await this.handleArticleLocations(queryRunner, id, locations);
+      if (finalLocations && finalLocations.length > 0) {
+        await this.handleArticleLocations(queryRunner, id, finalLocations);
       }
 
       await queryRunner.manager.update(Article, { id }, { ...restData });
