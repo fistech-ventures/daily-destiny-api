@@ -23,4 +23,4 @@ jobs:
             git pull origin main
             yarn install
             yarn build
-            pm2 restart daily-destiny-api
+            pm2 restart server
