@@ -207,14 +207,32 @@ export class ArticleService extends BaseService<Article> {
 
     if (tag.length) return tag[0];
 
-    // create new
-    const created = await queryRunner.manager.query(`
-      INSERT INTO tags ("canonicalId", title, article)
-      VALUES ($1, $1, 1)
-      RETURNING *
+    // title match (case-insensitive)
+    const titleMatch = await queryRunner.manager.query(`
+      SELECT * FROM tags WHERE LOWER(title) = $1 LIMIT 1
     `, [clean]);
 
-    return created[0];
+    if (titleMatch.length) return titleMatch[0];
+
+    // create new
+    try {
+      const created = await queryRunner.manager.query(`
+        INSERT INTO tags ("canonicalId", title, article)
+        VALUES ($1, $1, 1)
+        RETURNING *
+      `, [clean]);
+
+      return created[0];
+    } catch (error) {
+      // If insertion fails due to unique constraint, try to find the tag again
+      if (error.message && error.message.includes('duplicate key')) {
+        const existingTag = await queryRunner.manager.query(`
+          SELECT * FROM tags WHERE LOWER(title) = $1 LIMIT 1
+        `, [clean]);
+        if (existingTag.length) return existingTag[0];
+      }
+      throw error;
+    }
   }
 
   async findRelatedArticleAndTopicById(id: string): Promise<SuccessResponse> {
