@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
+import { EpaperPageDTO } from './epaper.bulk-upload.dto';
 
 export class EpaperUpdateDTO {
   @ApiProperty({
@@ -80,4 +81,13 @@ export class EpaperUpdateDTO {
   @IsOptional()
   @IsNumber()
   readonly fileSize?: number;
+
+  @ApiProperty({
+    type: [EpaperPageDTO],
+    required: false,
+    description: 'Additional pages to add for this date and publication',
+  })
+  @IsOptional()
+  @IsArray()
+  readonly pages?: EpaperPageDTO[];
 }
