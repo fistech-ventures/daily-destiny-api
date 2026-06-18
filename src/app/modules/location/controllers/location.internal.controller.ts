@@ -21,6 +21,8 @@ export class LocationInternalController {
   @Get()
   @ApiOperation({ summary: 'Get all locations with filters' })
   async findAll(@Query() query: LocationFilterDTO): Promise<SuccessResponse<Location[]>> {
+    query['isActive'] = true;
+    query['sortBy'] = 'createdAt';
     return this.service.findAllBase({ ...query, isActive: true }, { relations: { parent: true } });
   }
 

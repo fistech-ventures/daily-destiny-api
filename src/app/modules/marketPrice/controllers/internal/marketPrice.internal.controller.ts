@@ -12,12 +12,15 @@ import { MarketPriceService } from '../../services/marketPrice.service';
 @ApiBearerAuth()
 @Controller('internal/market-prices')
 export class MarketPriceInternalController {
-  constructor(private readonly service: MarketPriceService) {}
+  constructor(private readonly service: MarketPriceService) { }
 
   RELATIONS: FindOptionsRelations<MarketPrice> = {};
 
   @Get()
   async findAll(@Query() query: MarketPriceFilterDTO): Promise<SuccessResponse<MarketPrice[]>> {
+    query['isActive'] = true;
+    query['sortBy'] = 'position';
+    query['sortOrder'] = 'asc';
     return this.service.findAllBase(query, { relations: this.RELATIONS });
   }
 
