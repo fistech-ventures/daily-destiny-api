@@ -22,4 +22,12 @@ export class LocationFilterDTO extends BaseFilterDTO {
   @IsOptional()
   @IsUUID()
   readonly parentId?: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'position',
+    required: false,
+  })
+  @IsOptional()
+  sortBy!: string;
 }
