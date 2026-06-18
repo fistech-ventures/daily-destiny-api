@@ -18,6 +18,8 @@ export class MarketPriceWebController {
   @Get()
   async findAll(@Query() query: MarketPriceFilterDTO): Promise<SuccessResponse<any>> {
     query['isActive'] = true;
+    query['sortBy'] = 'createdAt';
+    query['sortOrder'] = 'asc';
     return this.service.findAllBase(query)
   }
 }
