@@ -20,7 +20,7 @@ export class SubCategoryInternalController {
   @Get()
   async findAll(@Query() query: SubCategoryFilterDTO): Promise<SuccessResponse<SubCategory[]>> {
     query['sortBy'] = 'position';
-    query['sortOrder'] = 'desc';
+    query['sortOrder'] = 'asc';
     return this.service.findAllBase(query, { relations: this.RELATIONS });
   }
 
