@@ -45,4 +45,12 @@ export class SubCategoryFilterDTO {
   })
   @IsOptional()
   readonly categoryId!: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'position',
+    required: false,
+  })
+  @IsOptional()
+  sortBy!: string;
 }

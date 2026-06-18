@@ -37,4 +37,12 @@ export class CategoryFilterDTO {
   })
   @IsOptional()
   isActive!: boolean;
+
+  @ApiProperty({
+    type: String,
+    example: 'position',
+    required: false,
+  })
+  @IsOptional()
+  sortBy!: string;
 }
