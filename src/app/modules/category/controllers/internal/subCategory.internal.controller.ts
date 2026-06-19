@@ -13,7 +13,7 @@ import { SubCategoryFilterDTO } from '../../dtos/subCategory/filter.dto';
 @ApiBearerAuth()
 @Controller('internal/sub-categories')
 export class SubCategoryInternalController {
-  constructor(private readonly service: SubCategoryService) {}
+  constructor(private readonly service: SubCategoryService) { }
 
   RELATIONS: FindOptionsRelations<SubCategory> = {};
 
@@ -21,7 +21,27 @@ export class SubCategoryInternalController {
   async findAll(@Query() query: SubCategoryFilterDTO): Promise<SuccessResponse<SubCategory[]>> {
     query['sortBy'] = 'position';
     query['sortOrder'] = 'asc';
-    return this.service.findAllBase(query, { relations: this.RELATIONS });
+    return this.service.findAllBase(query, {
+      relations: this.RELATIONS,
+      select: {
+        id: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        title: true,
+        titleBn: true,
+        slug: true,
+        slugBn: true,
+        position: true,
+        article: true,
+        categoryId: true,
+        category: {
+          id: true,
+          title: true,
+          titleBn: true,
+        }
+      }
+    });
   }
 
   @Get(':id')
