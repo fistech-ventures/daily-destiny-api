@@ -15,7 +15,7 @@ import { SubCategoryFilterDTO } from '../../dtos/subCategory/filter.dto';
 export class SubCategoryInternalController {
   constructor(private readonly service: SubCategoryService) { }
 
-  RELATIONS: FindOptionsRelations<SubCategory> = {};
+  RELATIONS: FindOptionsRelations<SubCategory> = { category: true };
 
   @Get()
   async findAll(@Query() query: SubCategoryFilterDTO): Promise<SuccessResponse<SubCategory[]>> {
