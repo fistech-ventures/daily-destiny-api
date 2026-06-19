@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SuccessResponse } from '@src/app/types';
 import { FindOptionsRelations } from 'typeorm';
@@ -12,7 +12,7 @@ import { AuthorService } from '../../services/author.service';
 @ApiBearerAuth()
 @Controller('internal/authors')
 export class AuthorInternalController {
-  constructor(private readonly service: AuthorService) {}
+  constructor(private readonly service: AuthorService) { }
 
   RELATIONS: FindOptionsRelations<Author> = {};
 
@@ -34,5 +34,10 @@ export class AuthorInternalController {
   @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() body: AuthorUpdateDTO): Promise<Author> {
     return this.service.updateOneBase(id, body, { relations: this.RELATIONS });
+  }
+
+  @Delete(':id')
+  async deleteOne(@Param('id') id: string): Promise<SuccessResponse> {
+    return this.service.deleteOneBase(id);
   }
 }

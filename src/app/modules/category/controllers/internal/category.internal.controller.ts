@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SuccessResponse } from '@src/app/types';
 import { FindOptionsRelations } from 'typeorm';
@@ -12,7 +12,7 @@ import { CategoryService } from '../../services/category.service';
 @ApiBearerAuth()
 @Controller('internal/categories')
 export class CategoryInternalController {
-  constructor(private readonly service: CategoryService) {}
+  constructor(private readonly service: CategoryService) { }
 
   RELATIONS: FindOptionsRelations<Category> = {};
 
@@ -36,5 +36,10 @@ export class CategoryInternalController {
   @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() body: CategoryUpdateDTO): Promise<Category> {
     return this.service.updateOne(id, body);
+  }
+
+  @Delete(':id')
+  async deleteOne(@Param('id') id: string): Promise<SuccessResponse> {
+    return this.service.deleteOneBase(id);
   }
 }
