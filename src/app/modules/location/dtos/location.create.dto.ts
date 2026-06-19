@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { ENUM_LOCATION_TYPE } from '@src/shared/enums/common.enums';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class LocationCreateDTO {
   @ApiProperty({
@@ -62,5 +62,6 @@ export class LocationCreateDTO {
     example: true,
   })
   @IsOptional()
+  @IsBoolean()
   readonly isActive?: boolean;
 }

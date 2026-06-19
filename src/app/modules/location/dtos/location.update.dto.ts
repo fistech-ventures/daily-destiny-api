@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, IsUUID, IsNumber } from 'class-validator';
 import { ENUM_LOCATION_TYPE } from '@src/shared/enums/common.enums';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class LocationUpdateDTO {
   @ApiProperty({
@@ -43,7 +43,6 @@ export class LocationUpdateDTO {
     type: String,
     required: false,
     description: 'Parent location UUID',
-    example: '550e8400-e29b-41d4-a716-446655440000',
   })
   @IsOptional()
   @IsUUID()
@@ -60,9 +59,9 @@ export class LocationUpdateDTO {
 
   @ApiProperty({
     type: Boolean,
-    required: true,
+    required: false,
   })
   @IsOptional()
-  @IsString()
+  @IsBoolean()
   readonly isActive?: boolean;
 }
