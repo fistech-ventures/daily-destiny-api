@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SuccessResponse } from '@src/app/types';
 import { FindOptionsRelations } from 'typeorm';
@@ -12,7 +12,7 @@ import { PollService } from '../../services/poll.service';
 @ApiBearerAuth()
 @Controller('internal/polls')
 export class PollInternalController {
-  constructor(private readonly service: PollService) {}
+  constructor(private readonly service: PollService) { }
 
   RELATIONS: FindOptionsRelations<Poll> = { options: true, author: true };
 
@@ -34,5 +34,10 @@ export class PollInternalController {
   @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() body: PollUpdateDTO): Promise<Poll> {
     return this.service.updateOne(id, body, { relations: this.RELATIONS });
+  }
+
+  @Delete(':id')
+  async deleteOne(@Param('id') id: string): Promise<SuccessResponse> {
+    return this.service.deleteOneBase(id);
   }
 }

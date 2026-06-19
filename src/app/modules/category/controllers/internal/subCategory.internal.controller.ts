@@ -1,13 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SuccessResponse } from '@src/app/types';
 import { FindOptionsRelations } from 'typeorm';
-import { Category } from '../../entities/category.entity';
-import { SubCategoryService } from '../../services/subCategory.service';
-import { SubCategory } from '../../entities/subCategory.entity';
 import { SubCategoryCreateDTO } from '../../dtos/subCategory/create.dto';
-import { SubCategoryUpdateDTO } from '../../dtos/subCategory/update.dto';
 import { SubCategoryFilterDTO } from '../../dtos/subCategory/filter.dto';
+import { SubCategoryUpdateDTO } from '../../dtos/subCategory/update.dto';
+import { Category } from '../../entities/category.entity';
+import { SubCategory } from '../../entities/subCategory.entity';
+import { SubCategoryService } from '../../services/subCategory.service';
 
 @ApiTags('Category')
 @ApiBearerAuth()
@@ -57,5 +57,10 @@ export class SubCategoryInternalController {
   @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() body: SubCategoryUpdateDTO): Promise<Category> {
     return this.service.updateOneBase(id, body, { relations: this.RELATIONS });
+  }
+
+  @Delete(':id')
+  async deleteOne(@Param('id') id: string): Promise<SuccessResponse> {
+    return this.service.deleteOneBase(id);
   }
 }
