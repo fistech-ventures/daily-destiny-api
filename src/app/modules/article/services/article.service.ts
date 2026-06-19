@@ -3,9 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BaseService } from '@src/app/base';
 import { IAuthUser } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
-import { ENV } from '@src/env';
-import { asyncForEach, extractTags, generateCode } from '@src/shared';
-import natural from 'natural';
+import { asyncForEach, generateCode } from '@src/shared';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { ENUM_ARTICLE_STATUS } from '../const';
 import { ArticleCreateDTO } from '../dtos/article/create.dto';
@@ -51,26 +49,8 @@ export class ArticleService extends BaseService<Article> {
         finalLocations.push({ locationId: upazillaId, isPrimary: false });
       }
 
-      // 1. extract tags
-
-      let rawTags = []
-      if (ENV.isDevelopment)
-        rawTags = extractTags(data.details || "");
-      console.info("🚀 ~ ArticleService ~ createOne ~ rawTags:", rawTags)
-      // 2. merge
-      const merged = [
-        ...(data.tags || []),
-        ...rawTags
-      ];
-      console.info("🚀 ~ ArticleService ~ createOne ~ merged:", merged)
-
-      // 3. resolve ALL tags properly
-      let finalTags = [];
-      if (merged?.length) {
-        finalTags = await this.processTags(queryRunner, merged);
-        console.info("🚀 ~ ArticleService ~ createOne ~ finalTags:", finalTags)
-        data['tags'] = finalTags;
-      }
+      // Store tags as simple array of strings
+      data['tags'] = data.tags || [];
 
       // 4. save article
       if (data?.status && data?.status === ENUM_ARTICLE_STATUS.PUBLISHED) {
@@ -94,33 +74,6 @@ export class ArticleService extends BaseService<Article> {
       // Handle article locations
       if (finalLocations && finalLocations.length > 0) {
         await this.handleArticleLocations(queryRunner, saved.id, finalLocations);
-      }
-
-      // 5. batch upsert tags
-      if (finalTags?.length) {
-        await queryRunner.manager.query(`
-        INSERT INTO tags ("canonicalId", "title", article)
-        SELECT t, t, 1
-        FROM unnest($1::text[]) AS t
-        ON CONFLICT ("canonicalId")
-        DO UPDATE SET article = tags.article + 1
-      `, [finalTags]);
-
-        // 6. fetch tag ids
-        const tags = await queryRunner.manager.query(`
-        SELECT id, "canonicalId"
-        FROM tags
-        WHERE "canonicalId" = ANY($1)
-      `, [finalTags]);
-
-        // 7. attach relation
-        for (const tag of tags) {
-          await queryRunner.manager.query(`
-          INSERT INTO article_tags ("articleId", "tagId")
-          VALUES ($1, $2)
-          ON CONFLICT DO NOTHING
-        `, [saved.id, tag.id]);
-        }
       }
 
       await queryRunner.commitTransaction();
@@ -150,89 +103,6 @@ export class ArticleService extends BaseService<Article> {
       }
     }
     return code;
-  }
-
-  async processTags(queryRunner: QueryRunner, tags: string[]): Promise<string[]> {
-    if (!tags?.length) return [];
-    const STOPWORDS = new Set(["the", "is", "and", "of", "to", "in", "a"]);
-
-    const cleaned = tags
-      .map(t => this.normalizeTag(t))
-      .filter(t => t.length > 2 && !STOPWORDS.has(t));
-
-    // resolve sequentially (safe for DB consistency)
-    const resolved: string[] = [];
-
-    for (const tag of cleaned) {
-      const finalTag = await this.resolveTag(queryRunner, tag);
-      resolved.push(finalTag.canonicalId);
-    }
-
-    return [...new Set(resolved)].slice(0, 20);
-  }
-
-  normalizeTag(tag: string): string {
-    const cleaned = tag
-      .toLowerCase()
-      .trim();
-    // .replace(/[^\p{L}\p{N}\s]/gu, ''); // ✅ Unicode-safe
-
-    const isEnglish = /^[a-zA-Z\s]+$/.test(cleaned);
-
-    if (isEnglish) {
-      return natural.PorterStemmer.stem(cleaned);
-    }
-
-    return cleaned; // keep Bangla untouched
-  }
-
-  async resolveTag(queryRunner: QueryRunner, raw: string): Promise<any> {
-    const clean = raw.toLowerCase().trim();
-
-    // alias match
-    const alias = await queryRunner.manager.query(`
-      SELECT t.*
-      FROM tag_alias a
-      JOIN tags t ON t.id = a."tagId"
-      WHERE a.title = $1
-      LIMIT 1
-    `, [clean]);
-
-    if (alias.length) return alias[0];
-
-    // canonical match
-    const tag = await queryRunner.manager.query(`
-      SELECT * FROM tags WHERE "canonicalId" = $1 LIMIT 1
-    `, [clean]);
-
-    if (tag.length) return tag[0];
-
-    // title match (case-insensitive)
-    const titleMatch = await queryRunner.manager.query(`
-      SELECT * FROM tags WHERE LOWER(title) = $1 LIMIT 1
-    `, [clean]);
-
-    if (titleMatch.length) return titleMatch[0];
-
-    // create new
-    try {
-      const created = await queryRunner.manager.query(`
-        INSERT INTO tags ("canonicalId", title, article)
-        VALUES ($1, $1, 1)
-        RETURNING *
-      `, [clean]);
-
-      return created[0];
-    } catch (error) {
-      // If insertion fails due to unique constraint, try to find the tag again
-      if (error.message && error.message.includes('duplicate key')) {
-        const existingTag = await queryRunner.manager.query(`
-          SELECT * FROM tags WHERE LOWER(title) = $1 LIMIT 1
-        `, [clean]);
-        if (existingTag.length) return existingTag[0];
-      }
-      throw error;
-    }
   }
 
   async findRelatedArticleAndTopicById(id: string): Promise<SuccessResponse> {
@@ -344,41 +214,9 @@ export class ArticleService extends BaseService<Article> {
     await queryRunner.startTransaction();
 
     try {
+      // Update tags as simple array of strings
       if (tags?.length) {
-        const existingTags = (articleData.tags || []).map(t => t.toLowerCase());
-        const newTags = tags.filter(tag => !existingTags.includes(tag.toLowerCase()));
-        // 3. resolve ALL tags properly
-        let newProccessedTags = []
-        if (newTags?.length) {
-          newProccessedTags = await this.processTags(queryRunner, newTags);
-          console.info("🚀 ~ ArticleService ~ updateOne ~ newProccessedTags:", newProccessedTags)
-        }
-        // 5. batch upsert tags
-        if (newProccessedTags?.length) {
-          await queryRunner.manager.query(`
-        INSERT INTO tags ("canonicalId", "title", article)
-        SELECT t, t, 1
-        FROM unnest($1::text[]) AS t
-        ON CONFLICT ("canonicalId")
-        DO UPDATE SET article = tags.article + 1
-      `, [newProccessedTags]);
-
-          // 6. fetch tag ids
-          const upsertTags = await queryRunner.manager.query(`
-        SELECT id, "canonicalId"
-        FROM tags
-        WHERE "canonicalId" = ANY($1)
-      `, [newProccessedTags]);
-
-          // 7. attach relation
-          for (const tag of upsertTags) {
-            await queryRunner.manager.query(`
-          INSERT INTO article_tags ("articleId", "tagId")
-          VALUES ($1, $2)
-          ON CONFLICT DO NOTHING
-        `, [id, tag.id]);
-          }
-        }
+        updateData['tags'] = tags;
       }
 
       // Handle article locations
