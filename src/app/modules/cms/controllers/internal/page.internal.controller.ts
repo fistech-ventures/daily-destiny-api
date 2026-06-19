@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SuccessResponse } from '@src/app/types';
 import { FindOptionsRelations } from 'typeorm';
@@ -12,7 +12,7 @@ import { PageService } from '../../services/page.service';
 @ApiBearerAuth()
 @Controller('internal/pages')
 export class PageInternalController {
-  constructor(private readonly service: PageService) {}
+  constructor(private readonly service: PageService) { }
 
   RELATIONS: FindOptionsRelations<Page> = {
     sections: { section: { items: { article: true, ad: true } } },
@@ -41,5 +41,10 @@ export class PageInternalController {
   @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() body: PageUpdateDTO): Promise<Page> {
     return this.service.updateOne(id, body, { relations: this.RELATIONS });
+  }
+
+  @Delete(':id')
+  async deleteOne(@Param('id') id: string): Promise<SuccessResponse> {
+    return this.service.deleteOneBase(id);
   }
 }

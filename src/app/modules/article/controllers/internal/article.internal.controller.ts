@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthUser } from '@src/app/decorators';
 import { IAuthUser } from '@src/app/interfaces';
@@ -53,5 +53,10 @@ export class ArticleInternalController {
   @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() body: ArticleUpdateDTO, @AuthUser() authUser: IAuthUser): Promise<Article> {
     return this.service.updateOne(id, body, authUser);
+  }
+
+  @Delete(':id')
+  async deleteOne(@Param('id') id: string): Promise<SuccessResponse> {
+    return this.service.deleteOneBase(id);
   }
 }

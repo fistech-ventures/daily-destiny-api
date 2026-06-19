@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SuccessResponse } from '@src/app/types';
 import { FindOptionsRelations } from 'typeorm';
@@ -10,7 +10,7 @@ import { StartupService } from '../../services/startup.service';
 @ApiBearerAuth()
 @Controller('internal/startups')
 export class StartupInternalController {
-  constructor(private readonly service: StartupService) {}
+  constructor(private readonly service: StartupService) { }
 
   RELATIONS: FindOptionsRelations<Startup> = { founders: true };
 
@@ -32,5 +32,10 @@ export class StartupInternalController {
   @Patch(':id')
   async updateOne(@Param('id') id: string, @Body() body: StartupUpdateDTO): Promise<Startup> {
     return this.service.updateOne(id, body, { relations: this.RELATIONS });
+  }
+
+  @Delete(':id')
+  async deleteOne(@Param('id') id: string): Promise<SuccessResponse> {
+    return this.service.deleteOneBase(id);
   }
 }
