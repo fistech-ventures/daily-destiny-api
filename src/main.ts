@@ -38,7 +38,7 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(ENV.port, host);
   console.warn(
-    `\n\Entrepreneur News API ===>>\n\nNODE_VERSION: v22.12.0\nNODE_ENV: ${ENV.env}\nRUNNING_ON: ${await app.getUrl()}\nAPI_DOCUMENTATION: ${await app.getUrl()}/docs\n\n`,
+    `\n\Daily Destiny API ===>>\n\nNODE_VERSION: v22.12.0\nNODE_ENV: ${ENV.env}\nRUNNING_ON: ${await app.getUrl()}\nAPI_DOCUMENTATION: ${await app.getUrl()}/docs\n\n`,
   );
 }
 bootstrap();
