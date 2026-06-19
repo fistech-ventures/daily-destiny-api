@@ -57,4 +57,12 @@ export class LocationUpdateDTO {
   @IsOptional()
   @IsNumber()
   readonly position?: number;
+
+  @ApiProperty({
+    type: String,
+    required: true,
+  })
+  @IsOptional()
+  @IsString()
+  readonly isActive?: boolean;
 }
