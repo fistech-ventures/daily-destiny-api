@@ -225,7 +225,7 @@ export class ArticleCreateDTO {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'sub category uuid',
   })
   @IsOptional()
