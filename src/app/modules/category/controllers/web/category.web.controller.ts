@@ -20,7 +20,7 @@ export class CategoryWebController {
   async findAll(@Query() query: CategoryFilterDTO): Promise<SuccessResponse<Category[]>> {
     query['isActive'] = true;
     query['sortBy'] = 'position';
-    query['sortOrder'] = 'desc';
+    query['sortOrder'] = 'asc';
     return this.service.findAllBase(query, { relations: this.RELATIONS });
   }
 
