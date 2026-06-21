@@ -62,7 +62,7 @@ export class Article extends BaseEntity {
   author?: Author;
 
   @RelationId((e: Article) => e.author)
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   authorId?: string;
 
   @ManyToOne(() => Category, { onDelete: 'CASCADE' })
@@ -70,7 +70,7 @@ export class Article extends BaseEntity {
   category?: Category;
 
   @RelationId((e: Article) => e.category)
-  @Column({ nullable: false })
+  @Column({ nullable: true })
   categoryId?: string;
 
   @ManyToOne(() => SubCategory, { onDelete: 'CASCADE' })

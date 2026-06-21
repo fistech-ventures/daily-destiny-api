@@ -34,23 +34,23 @@ export class ArticleMediaCreateDTO {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'caption',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly caption!: string;
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'caption',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly credit!: string;
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'altText / title',
   })
   @IsOptional()
@@ -66,15 +66,15 @@ export class ArticleMediaCreateDTO {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'key',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly key!: string;
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'youtube/facebook/do-space',
   })
   @IsNotEmpty()
@@ -82,18 +82,18 @@ export class ArticleMediaCreateDTO {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'png/jpeg/webp',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly mimetype!: string;
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: '.webp/.WEBP/.WEBM',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly extension!: string;
 
 }
@@ -110,10 +110,10 @@ export class ArticleCreateDTO {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'slugified-news-title',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly slug!: string;
 
   @ApiProperty({
@@ -150,26 +150,26 @@ export class ArticleCreateDTO {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'https://en.com/article-x-cover.png',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly coverImage!: string;
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'Burning Iran | Robin Jaman / Facebook / Reuters',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly coverImageCredit!: string;
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: '2025-05-30',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly date!: string;
 
   @ApiProperty({ type: Boolean, required: false, example: false })
@@ -209,18 +209,18 @@ export class ArticleCreateDTO {
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'author uuid',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly authorId!: string;
 
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     example: 'category uuid',
   })
-  @IsNotEmpty()
+  @IsOptional()
   readonly categoryId!: string;
 
   @ApiProperty({

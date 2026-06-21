@@ -31,12 +31,12 @@ export class ArticleMedia extends BaseEntity {
   @Column({ type: ENUM_COLUMN_TYPES.TEXT, nullable: false })
   url?: string;
 
-  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, length: 255, nullable: false })
+  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, length: 255, nullable: true })
   key?: string;
 
-  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, length: 50, nullable: false })
+  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, length: 50, nullable: true })
   mimetype?: string;
 
-  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, length: 10, nullable: false })
+  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, length: 10, nullable: true })
   extension?: string;
 }
