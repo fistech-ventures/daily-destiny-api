@@ -58,6 +58,11 @@ export enum ENUM_TABLE_NAMES {
   SLIDES = 'slides',
   SLIDER_ITEMS = 'slider_items',
   CONTENTS = 'contents',
+
+  // epaper visual
+  EDITIONS = 'editions',
+  EPAPER_PAGES = 'epaper_pages',
+  HOTSPOTS = 'hotspots',
 }
 
 export enum ENUM_COLUMN_TYPES {
