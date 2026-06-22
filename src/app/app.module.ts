@@ -23,6 +23,7 @@ import { OpinionModule } from './modules/opinion/opinion.module';
 import { UserModule } from './modules/user/user.module';
 import { UniqueValidatorPipe } from './pipes/uniqueValidator.pipe';
 import { EpaperModule } from './modules/epaper/epaper.module';
+import { EpaperVisualModule } from './modules/epaper-visual/epaper-visual.module';
 
 const MODULES = [
   DatabaseModule,
@@ -44,6 +45,7 @@ const MODULES = [
   AdModule,
   MarketPriceModule,
   EpaperModule,
+  EpaperVisualModule,
 ];
 const PIPES = [UniqueValidatorPipe];
 

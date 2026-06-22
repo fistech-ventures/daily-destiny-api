@@ -365,6 +365,14 @@ export class ArticleService extends BaseService<Article> {
       conditions.push(`a.tags @> $${paramIndex++}`);
       params.push(JSON.stringify(query.topics));
     }
+    if (query._startDate) {
+      conditions.push(`a."createdAt" >= $${paramIndex++}`);
+      params.push(new Date(query._startDate));
+    }
+    if (query._endDate) {
+      conditions.push(`a."createdAt" <= $${paramIndex++}`);
+      params.push(new Date(query._endDate));
+    }
 
     const whereClause = conditions.join(' AND ');
 
@@ -475,6 +483,12 @@ export class ArticleService extends BaseService<Article> {
     }
     if (query.topics?.length) {
       queryBuilder.andWhere(`article.tags @> :tags`, { tags: JSON.stringify(query.topics) });
+    }
+    if (query._startDate) {
+      queryBuilder.andWhere('article.createdAt >= :_startDate', { _startDate: new Date(query._startDate) });
+    }
+    if (query._endDate) {
+      queryBuilder.andWhere('article.createdAt <= :_endDate', { _endDate: new Date(query._endDate) });
     }
 
     // Pagination

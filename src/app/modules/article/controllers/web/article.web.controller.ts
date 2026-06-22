@@ -28,8 +28,16 @@ export class ArticleWebController {
     query['isActive'] = true;
     query['status'] = ENUM_ARTICLE_STATUS.PUBLISHED;
 
+    // Handle date range filtering (startDate / endDate)
+    const startDate = (query as any).startDate;
+    const endDate = (query as any).endDate;
+    delete (query as any).startDate;
+    delete (query as any).endDate;
+
     // Handle location-based filtering
     if (query.divisionId || query.districtId || query.upazillaId || query.unionId || query.locationId) {
+      query['_startDate'] = startDate;
+      query['_endDate'] = endDate;
       const result = await this.service.findWithLocationFilter(query);
       return new SuccessResponse('Articles fetched successfully', result.data, {
         total: result.total,
@@ -41,12 +49,27 @@ export class ArticleWebController {
 
     // Handle popular articles filter
     if (query.isPopular === 'true') {
+      query['_startDate'] = startDate;
+      query['_endDate'] = endDate;
       const result = await this.service.findPopularArticles(query);
       return new SuccessResponse('Popular articles fetched successfully', result.data, {
         total: result.total,
         page: result.page,
         limit: result.limit,
         skip: result.skip,
+      });
+    }
+
+    // For the default findAllBase path, add createdAt Raw filter for date range
+    if (startDate || endDate) {
+      query['createdAt'] = Raw((alias) => {
+        const parts: string[] = [];
+        if (startDate) parts.push(`${alias} >= :startDate`);
+        if (endDate) parts.push(`${alias} <= :endDate`);
+        return parts.join(' AND ');
+      }, {
+        ...(startDate && { startDate: new Date(startDate) }),
+        ...(endDate && { endDate: new Date(endDate) }),
       });
     }
 
