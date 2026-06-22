@@ -8,9 +8,12 @@ import { ArticleTag } from './entities/articleTag.entity';
 import { ArticleMedia } from './entities/articleMedia.entity';
 import { ArticleMediaService } from './services/articleMedia.service';
 import { ArticleLocation } from '../location/entities/articleLocation.entity';
+import { ArticleEvent } from './entities/articleEvent.entity';
+import { ArticlePopularity } from './entities/articlePopularity.entity';
+import { ArticlePopularityService } from './services/articlePopularity.service';
 
-const entities = [Article, ArticleTag, ArticleMedia, ArticleLocation];
-const services = [ArticleService, ArticleMediaService];
+const entities = [Article, ArticleTag, ArticleMedia, ArticleLocation, ArticleEvent, ArticlePopularity];
+const services = [ArticleService, ArticleMediaService, ArticlePopularityService];
 const subscribers = [];
 const webControllers = [ArticleWebController];
 const internalControllers = [ArticleInternalController];
