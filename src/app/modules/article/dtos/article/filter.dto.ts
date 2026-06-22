@@ -1,10 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BaseFilterDTO } from '@src/app/base';
 import { Transform } from 'class-transformer';
-import { IsArray, IsEnum, IsOptional, IsUUID } from 'class-validator';
+import { IsArray, IsBooleanString, IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { ENUM_ARTICLE_LANGUAGE, ENUM_ARTICLE_STATUS } from '../../const';
 
 export class ArticleFilterDTO extends BaseFilterDTO {
+  @ApiProperty({ type: Boolean, required: false, description: 'Filter popular articles (sorted by engagement score)' })
+  @IsOptional()
+  @IsBooleanString()
+  readonly isPopular?: string;
   @ApiProperty({ type: Boolean, required: false, description: "true/false" })
   @IsOptional()
   readonly isExclusive?: boolean;

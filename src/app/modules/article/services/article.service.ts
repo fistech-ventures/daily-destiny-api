@@ -315,6 +315,105 @@ export class ArticleService extends BaseService<Article> {
   }
 
   /**
+   * Find popular articles sorted by engagement score, filtered by isActive/status
+   */
+  async findPopularArticles(
+    query: any,
+  ): Promise<{ data: Article[]; total: number; page: number; limit: number; skip: number }> {
+    const page = parseInt(String(query.page), 10) || 1;
+    const limit = parseInt(String(query.limit), 10) || 10;
+    const skip = (page - 1) * limit;
+
+    // Build WHERE conditions for raw SQL
+    const conditions: string[] = ['a."isActive" = $1'];
+    const params: any[] = [query.isActive ?? true];
+    let paramIndex = 2;
+
+    if (query.status) {
+      conditions.push(`a.status = $${paramIndex++}`);
+      params.push(query.status);
+    }
+    if (query.categoryId) {
+      conditions.push(`a."categoryId" = $${paramIndex++}`);
+      params.push(query.categoryId);
+    }
+    if (query.subCategoryId) {
+      conditions.push(`a."subCategoryId" = $${paramIndex++}`);
+      params.push(query.subCategoryId);
+    }
+    if (query.authorId) {
+      conditions.push(`a."authorId" = $${paramIndex++}`);
+      params.push(query.authorId);
+    }
+    if (query.type) {
+      conditions.push(`a.type = $${paramIndex++}`);
+      params.push(query.type);
+    }
+    if (query.language) {
+      conditions.push(`a.language = $${paramIndex++}`);
+      params.push(query.language);
+    }
+    if (query.isExclusive !== undefined) {
+      conditions.push(`a."isExclusive" = $${paramIndex++}`);
+      params.push(query.isExclusive);
+    }
+    if (query.isFeatured !== undefined) {
+      conditions.push(`a."isFeatured" = $${paramIndex++}`);
+      params.push(query.isFeatured);
+    }
+    if (query.topics?.length) {
+      conditions.push(`a.tags @> $${paramIndex++}`);
+      params.push(JSON.stringify(query.topics));
+    }
+
+    const whereClause = conditions.join(' AND ');
+
+    // Get total count using raw SQL
+    const countResult = await this.dataSource.query(
+      `SELECT COUNT(*) as total FROM articles a
+       INNER JOIN article_popularity ap ON ap."articleId" = a.id
+       WHERE ${whereClause}`,
+      params,
+    );
+    const total = parseInt(countResult[0]?.total, 10) || 0;
+
+    if (total === 0) {
+      return { data: [], total: 0, page, limit, skip };
+    }
+
+    // Get paginated article IDs ordered by popularity score
+    const idRows = await this.dataSource.query(
+      `SELECT a.id FROM articles a
+       INNER JOIN article_popularity ap ON ap."articleId" = a.id
+       WHERE ${whereClause}
+       ORDER BY ap.score DESC, a."createdAt" DESC
+       LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
+      [...params, limit, skip],
+    );
+
+    const ids = idRows.map((r: any) => r.id);
+
+    // Load full articles with relations using query builder
+    const articles = await this._repo.createQueryBuilder('article')
+      .leftJoinAndSelect('article.author', 'author')
+      .leftJoinAndSelect('article.category', 'category')
+      .leftJoinAndSelect('article.subCategory', 'subCategory')
+      .leftJoinAndSelect('article.medias', 'medias')
+      .leftJoinAndSelect('article.locations', 'locations')
+      .leftJoinAndSelect('locations.location', 'location')
+      .where('article.id IN (:...ids)', { ids })
+      .getMany();
+
+    // Reorder articles to match the popularity order from raw SQL
+    const articleMap = new Map(articles.map((a) => [a.id, a]));
+    const data = ids
+      .map((id: string) => articleMap.get(id))
+      .filter((a): a is Article => !!a);
+
+    return { data, total, page, limit, skip };
+  }
+
+  /**
    * Find articles with location filter
    */
   async findWithLocationFilter(
