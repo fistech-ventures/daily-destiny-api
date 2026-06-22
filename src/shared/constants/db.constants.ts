@@ -42,6 +42,10 @@ export enum ENUM_TABLE_NAMES {
   AD_REQUESTS = 'ad_requests',
   EPAPERS = 'epapers',
 
+  // article popularity
+  ARTICLE_EVENTS = 'article_events',
+  ARTICLE_POPULARITY = 'article_popularity',
+
   // cms
   MENUS = 'menus',
   HERO_BANNERS = 'hero_banners',
