@@ -24,6 +24,7 @@ import { UserModule } from './modules/user/user.module';
 import { UniqueValidatorPipe } from './pipes/uniqueValidator.pipe';
 import { EpaperModule } from './modules/epaper/epaper.module';
 import { EpaperVisualModule } from './modules/epaper-visual/epaper-visual.module';
+import { SpecialEventModule } from './modules/special-event/specialEvent.module';
 
 const MODULES = [
   DatabaseModule,
@@ -46,6 +47,7 @@ const MODULES = [
   MarketPriceModule,
   EpaperModule,
   EpaperVisualModule,
+  SpecialEventModule,
 ];
 const PIPES = [UniqueValidatorPipe];
 

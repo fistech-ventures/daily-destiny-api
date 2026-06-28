@@ -63,6 +63,10 @@ export enum ENUM_TABLE_NAMES {
   EDITIONS = 'editions',
   EPAPER_PAGES = 'epaper_pages',
   HOTSPOTS = 'hotspots',
+
+  // special events
+  SPECIAL_EVENTS = 'special_events',
+  SPECIAL_EVENT_ARTICLES = 'special_event_articles',
 }
 
 export enum ENUM_COLUMN_TYPES {
