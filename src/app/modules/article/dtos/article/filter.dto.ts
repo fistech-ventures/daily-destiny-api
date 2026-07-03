@@ -121,6 +121,15 @@ export class ArticleFilterDTO extends BaseFilterDTO {
   @IsUUID()
   readonly locationId?: string;
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'Filter articles by a single date (YYYY-MM-DD) - overrides startDate/endDate',
+    example: '2024-01-15',
+  })
+  @IsOptional()
+  readonly date?: string;
+
   // @ApiProperty({
   //   type: [String],
   //   required: false,
