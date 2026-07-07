@@ -3,7 +3,7 @@ import { IAuthUser } from '@src/app/interfaces';
 import { ISeoMeta } from '@src/app/interfaces/seoMetaData.interface';
 import { ENUM_COLUMN_TYPES, ENUM_TABLE_NAMES } from '@src/shared';
 import { Type } from 'class-transformer';
-import { Column, Entity, ManyToOne, OneToMany, RelationId } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, RelationId } from 'typeorm';
 import { Author } from '../../author/entities/author.entity';
 import { Category } from '../../category/entities/category.entity';
 import { SubCategory } from '../../category/entities/subCategory.entity';
@@ -73,6 +73,14 @@ export class Article extends BaseEntity {
   @Column({ nullable: true })
   categoryId?: string;
 
+  @ManyToMany(() => Category)
+  @JoinTable({
+    name: 'article_categories',
+    joinColumn: { name: 'articleId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'categoryId', referencedColumnName: 'id' },
+  })
+  categories?: Category[];
+
   @ManyToOne(() => SubCategory, { onDelete: 'CASCADE' })
   @Type(() => SubCategory)
   subCategory?: SubCategory;
@@ -80,6 +88,14 @@ export class Article extends BaseEntity {
   @RelationId((e: Article) => e.subCategory)
   @Column({ nullable: true })
   subCategoryId?: string;
+
+  @ManyToMany(() => SubCategory)
+  @JoinTable({
+    name: 'article_sub_categories',
+    joinColumn: { name: 'articleId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'subCategoryId', referencedColumnName: 'id' },
+  })
+  subCategories?: SubCategory[];
 
   @Column({ type: ENUM_COLUMN_TYPES.JSONB, default: [] })
   tags?: any;

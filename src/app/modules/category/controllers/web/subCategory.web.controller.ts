@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SuccessResponse } from '@src/app/types';
-import { FindOptionsRelations } from 'typeorm';
+import { FindOptionsRelations, In } from 'typeorm';
 import { Public } from '@src/app/decorators/publicRoute.decorator';
 import { SubCategoryService } from '../../services/subCategory.service';
 import { SubCategory } from '../../entities/subCategory.entity';
@@ -21,6 +21,13 @@ export class SubCategoryWebController {
     query['isActive'] = true;
     query['sortBy'] = 'position';
     query['sortOrder'] = 'desc';
+
+    // Handle multiple categoryIds
+    if (query.categoryIds?.length) {
+      (query as any).categoryId = In(query.categoryIds);
+      delete (query as any).categoryIds;
+    }
+
     return this.service.findAllBase(query, { relations: this.RELATIONS });
   }
 

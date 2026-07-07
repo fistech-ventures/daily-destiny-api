@@ -20,18 +20,38 @@ export class ArticleFilterDTO extends BaseFilterDTO {
   @ApiProperty({
     type: String,
     required: false,
-    description: 'category uuid',
+    description: 'category uuid (single) - kept for backward compatibility',
   })
   @IsOptional()
   readonly categoryId!: string;
 
   @ApiProperty({
+    type: [String],
+    required: false,
+    description: 'Array of category UUIDs',
+  })
+  @IsOptional()
+  @IsArray()
+  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : undefined))
+  readonly categoryIds!: string[];
+
+  @ApiProperty({
     type: String,
     required: false,
-    description: 'category uuid',
+    description: 'sub category uuid (single) - kept for backward compatibility',
   })
   @IsOptional()
   readonly subCategoryId!: string;
+
+  @ApiProperty({
+    type: [String],
+    required: false,
+    description: 'Array of sub category UUIDs',
+  })
+  @IsOptional()
+  @IsArray()
+  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : undefined))
+  readonly subCategoryIds!: string[];
 
   @ApiProperty({
     type: String,
@@ -120,6 +140,15 @@ export class ArticleFilterDTO extends BaseFilterDTO {
   @IsOptional()
   @IsUUID()
   readonly locationId?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'Filter articles by a single date (YYYY-MM-DD) - overrides startDate/endDate',
+    example: '2024-01-15',
+  })
+  @IsOptional()
+  readonly date?: string;
 
   // @ApiProperty({
   //   type: [String],

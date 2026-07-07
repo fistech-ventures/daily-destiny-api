@@ -4,19 +4,29 @@ import { BaseService } from '@src/app/base';
 import { IAuthUser } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
 import { asyncForEach, generateCode } from '@src/shared';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { DataSource, In, QueryRunner, Repository } from 'typeorm';
+import isUuidValidator from 'validator/lib/isUUID';
 import { ENUM_ARTICLE_STATUS } from '../const';
 import { ArticleCreateDTO } from '../dtos/article/create.dto';
 import { ArticleMediaUpdateDTO, ArticleUpdateDTO } from '../dtos/article/update.dto';
 import { Article } from '../entities/article.entity';
 import { ArticleMedia } from '../entities/articleMedia.entity';
 import { ArticleMediaService } from './articleMedia.service';
+import { Category } from '../../category/entities/category.entity';
+import { SubCategory } from '../../category/entities/subCategory.entity';
+import { Author } from '../../author/entities/author.entity';
 
 @Injectable()
 export class ArticleService extends BaseService<Article> {
   constructor(
     @InjectRepository(Article)
     private readonly _repo: Repository<Article>,
+    @InjectRepository(Category)
+    private readonly _categoryRepo: Repository<Category>,
+    @InjectRepository(SubCategory)
+    private readonly _subCategoryRepo: Repository<SubCategory>,
+    @InjectRepository(Author)
+    private readonly _authorRepo: Repository<Author>,
     private readonly dataSource: DataSource,
     private readonly articleMediaService: ArticleMediaService,
   ) {
@@ -32,13 +42,13 @@ export class ArticleService extends BaseService<Article> {
     await queryRunner.startTransaction();
 
     try {
-      const { medias = [], locations = [], metaTitle, metaDescription, metaImage, metaKeywords = [], divisionId, districtId, upazillaId, ...data } = payload
+      const { medias = [], locations = [], metaTitle, metaDescription, metaImage, metaKeywords = [], divisionId, districtId, upazillaId, categoryIds = [], subCategoryIds = [], ...data } = payload
       data['code'] = await this.generateUniqueArticleCode(queryRunner);
       data['createdBy'] = authUser;
       data['seoMetaData'] = { title: metaTitle, description: metaDescription, image: metaImage, keywords: metaKeywords };
 
       // Handle hierarchical location IDs
-      const finalLocations = [...locations];
+      const finalLocations = [...(locations ?? [])];
       if (divisionId) {
         finalLocations.push({ locationId: divisionId, isPrimary: false });
       }
@@ -52,12 +62,38 @@ export class ArticleService extends BaseService<Article> {
       // Store tags as simple array of strings
       data['tags'] = data.tags || [];
 
+      // Handle author: if authorId is not a valid UUID, create a new author with that name
+      if (data['authorId']) {
+        data['authorId'] = await this.resolveAuthorId(data['authorId']);
+      }
+
+      // Handle multiple categories
+      let categories: Category[] = [];
+      if ((categoryIds ?? []).length > 0) {
+        categories = await this._categoryRepo.findBy({ id: In(categoryIds) });
+        data['categoryId'] = categoryIds[0]; // Set first category as primary for backward compat
+      }
+
+      // Handle multiple sub categories
+      let subCategories: SubCategory[] = [];
+      if ((subCategoryIds ?? []).length > 0) {
+        subCategories = await this._subCategoryRepo.findBy({ id: In(subCategoryIds) });
+        data['subCategoryId'] = subCategoryIds[0]; // Set first subCategory as primary for backward compat
+      }
+
       // 4. save article
       if (data?.status && data?.status === ENUM_ARTICLE_STATUS.PUBLISHED) {
         data['publishedBy'] = authUser;
         data['publishedAt'] = new Date().toString()
       } else delete data?.status
       const created = this._repo.create(data);
+      // Attach categories and subCategories for the ManyToMany relation
+      if (categories.length > 0) {
+        created.categories = categories;
+      }
+      if (subCategories.length > 0) {
+        created.subCategories = subCategories;
+      }
       const saved = await queryRunner.manager.save(created);
 
       if (medias && medias.length > 0) {
@@ -178,7 +214,7 @@ export class ArticleService extends BaseService<Article> {
     updateData['seoMetaData'] = { title: metaTitle, description: metaDescription, image: metaImage, keywords: metaKeywords };
 
     // Handle hierarchical location IDs
-    const finalLocations = [...locations];
+    const finalLocations = [...(locations ?? [])];
     if (divisionId) {
       finalLocations.push({ locationId: divisionId, isPrimary: false });
     }
@@ -207,7 +243,7 @@ export class ArticleService extends BaseService<Article> {
       updateData['archivedAt'] = new Date();
     }
 
-    const { medias = [], tags = [] } = payload;
+    const { medias = [], tags = [], categoryIds = [], subCategoryIds = [] } = payload;
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -219,12 +255,35 @@ export class ArticleService extends BaseService<Article> {
         updateData['tags'] = tags;
       }
 
+      // Handle author: if authorId is not a valid UUID, create a new author with that name
+      if (updateData['authorId']) {
+        updateData['authorId'] = await this.resolveAuthorId(updateData['authorId']);
+      }
+
       // Handle article locations
       if (finalLocations && finalLocations.length > 0) {
         await this.handleArticleLocations(queryRunner, id, finalLocations);
       }
 
-      const articleToUpdate = await queryRunner.manager.findOne(Article, { where: { id } });
+      const articleToUpdate = await queryRunner.manager.findOne(Article, { 
+        where: { id },
+        relations: ['categories', 'subCategories'],
+      });
+      
+      // Handle multiple categories on the loaded entity directly
+      if ((categoryIds ?? []).length > 0) {
+        const categories = await this._categoryRepo.findBy({ id: In(categoryIds) });
+        articleToUpdate.categories = categories;
+        updateData['categoryId'] = categoryIds[0]; // Set first category as primary for backward compat
+      }
+
+      // Handle multiple sub categories on the loaded entity directly
+      if ((subCategoryIds ?? []).length > 0) {
+        const subCategories = await this._subCategoryRepo.findBy({ id: In(subCategoryIds) });
+        articleToUpdate.subCategories = subCategories;
+        updateData['subCategoryId'] = subCategoryIds[0]; // Set first subCategory as primary for backward compat
+      }
+      
       Object.assign(articleToUpdate, updateData);
       await queryRunner.manager.save(articleToUpdate);
 
@@ -333,11 +392,17 @@ export class ArticleService extends BaseService<Article> {
       conditions.push(`a.status = $${paramIndex++}`);
       params.push(query.status);
     }
-    if (query.categoryId) {
+    if (query.categoryIds?.length) {
+      conditions.push(`a.id IN (SELECT "articleId" FROM article_categories WHERE "categoryId" = ANY($${paramIndex++}::uuid[]))`);
+      params.push(query.categoryIds);
+    } else if (query.categoryId) {
       conditions.push(`a."categoryId" = $${paramIndex++}`);
       params.push(query.categoryId);
     }
-    if (query.subCategoryId) {
+    if (query.subCategoryIds?.length) {
+      conditions.push(`a.id IN (SELECT "articleId" FROM article_sub_categories WHERE "subCategoryId" = ANY($${paramIndex++}::uuid[]))`);
+      params.push(query.subCategoryIds);
+    } else if (query.subCategoryId) {
       conditions.push(`a."subCategoryId" = $${paramIndex++}`);
       params.push(query.subCategoryId);
     }
@@ -460,10 +525,20 @@ export class ArticleService extends BaseService<Article> {
     }
 
     // Apply other filters
-    if (query.categoryId) {
+    if (query.categoryIds?.length) {
+      queryBuilder.andWhere(
+        'article.id IN (SELECT "articleId" FROM article_categories WHERE "categoryId" IN (:...categoryIds))',
+        { categoryIds: query.categoryIds },
+      );
+    } else if (query.categoryId) {
       queryBuilder.andWhere('article.categoryId = :categoryId', { categoryId: query.categoryId });
     }
-    if (query.subCategoryId) {
+    if (query.subCategoryIds?.length) {
+      queryBuilder.andWhere(
+        'article.id IN (SELECT "articleId" FROM article_sub_categories WHERE "subCategoryId" IN (:...subCategoryIds))',
+        { subCategoryIds: query.subCategoryIds },
+      );
+    } else if (query.subCategoryId) {
       queryBuilder.andWhere('article.subCategoryId = :subCategoryId', { subCategoryId: query.subCategoryId });
     }
     if (query.authorId) {
@@ -503,5 +578,32 @@ export class ArticleService extends BaseService<Article> {
     const [data, total] = await queryBuilder.getManyAndCount();
 
     return { data, total, page, limit, skip };
+  }
+
+  /**
+   * Resolve authorId: if it's a valid UUID, use as-is. Otherwise, create/find an author by name.
+   */
+  private async resolveAuthorId(authorId: string): Promise<string> {
+    if (!authorId || !authorId.trim()) {
+      return authorId;
+    }
+    if (isUuidValidator(authorId)) {
+      return authorId;
+    }
+
+    // Treat as author name - check if author with this name already exists
+    const trimmedName = authorId.trim();
+    let author = await this._authorRepo.findOne({ where: { name: trimmedName } });
+    if (!author) {
+      // Create a new author with the given name
+      author = this._authorRepo.create({
+        name: trimmedName,
+        nameBn: trimmedName,
+        isActive: false,
+      });
+      author = await this._authorRepo.save(author);
+    }
+
+    return author.id;
   }
 }

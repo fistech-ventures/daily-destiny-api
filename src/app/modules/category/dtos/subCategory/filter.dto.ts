@@ -1,5 +1,6 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class SubCategoryFilterDTO {
   @ApiProperty({
@@ -45,6 +46,16 @@ export class SubCategoryFilterDTO {
   })
   @IsOptional()
   readonly categoryId!: string;
+
+  @ApiProperty({
+    type: [String],
+    required: false,
+    description: 'Array of category UUIDs',
+  })
+  @IsOptional()
+  @IsArray()
+  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : undefined))
+  readonly categoryIds!: string[];
 
   @ApiProperty({
     type: String,
