@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestj
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SuccessResponse } from '@src/app/types';
 import { FindOptionsRelations, In } from 'typeorm';
+import isUuidValidator from 'validator/lib/isUUID';
 import { SubCategoryCreateDTO } from '../../dtos/subCategory/create.dto';
 import { SubCategoryFilterDTO } from '../../dtos/subCategory/filter.dto';
 import { SubCategoryUpdateDTO } from '../../dtos/subCategory/update.dto';
@@ -22,9 +23,12 @@ export class SubCategoryInternalController {
     query['sortBy'] = 'position';
     query['sortOrder'] = 'asc';
 
-    // Handle multiple categoryIds
+    // Handle multiple categoryIds (filter out non-UUID values to avoid DB errors)
     if (query.categoryIds?.length) {
-      (query as any).categoryId = In(query.categoryIds);
+      const validCategoryIds = query.categoryIds.filter((id) => isUuidValidator(id));
+      if (validCategoryIds.length > 0) {
+        (query as any).categoryId = In(validCategoryIds);
+      }
       delete (query as any).categoryIds;
     }
 
