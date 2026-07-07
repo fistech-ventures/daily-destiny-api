@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SuccessResponse } from '@src/app/types';
 import { FindOptionsRelations, In } from 'typeorm';
+import isUuidValidator from 'validator/lib/isUUID';
 import { Public } from '@src/app/decorators/publicRoute.decorator';
 import { SubCategoryService } from '../../services/subCategory.service';
 import { SubCategory } from '../../entities/subCategory.entity';
@@ -22,9 +23,12 @@ export class SubCategoryWebController {
     query['sortBy'] = 'position';
     query['sortOrder'] = 'desc';
 
-    // Handle multiple categoryIds
+    // Handle multiple categoryIds (filter out non-UUID values to avoid DB errors)
     if (query.categoryIds?.length) {
-      (query as any).categoryId = In(query.categoryIds);
+      const validCategoryIds = query.categoryIds.filter((id) => isUuidValidator(id));
+      if (validCategoryIds.length > 0) {
+        (query as any).categoryId = In(validCategoryIds);
+      }
       delete (query as any).categoryIds;
     }
 
