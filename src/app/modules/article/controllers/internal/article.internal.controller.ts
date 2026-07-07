@@ -87,20 +87,29 @@ export class ArticleInternalController {
     }
     delete query?.topics
 
-    // Handle categoryIds array filter via join table
-    if (query.categoryIds?.length) {
-      query['id'] = Raw((alias) => `${alias} IN (SELECT "articleId" FROM article_categories WHERE "categoryId" IN (:...categoryIds))`, {
-        categoryIds: query.categoryIds,
-      });
-      delete (query as any).categoryIds;
-    }
+    // Handle categoryIds and subCategoryIds array filters via join tables (also check legacy columns)
+    // Use a single Raw expression with both conditions to avoid overwriting
+    // Capture values before deleting (Raw callback is lazily evaluated)
+    const catIds = query.categoryIds;
+    const subCatIds = query.subCategoryIds;
+    delete (query as any).categoryIds;
+    delete (query as any).subCategoryIds;
 
-    // Handle subCategoryIds array filter via join table
-    if (query.subCategoryIds?.length) {
-      query['id'] = Raw((alias) => `${alias} IN (SELECT "articleId" FROM article_sub_categories WHERE "subCategoryId" IN (:...subCategoryIds))`, {
-        subCategoryIds: query.subCategoryIds,
+    if (catIds?.length || subCatIds?.length) {
+      query['id'] = Raw((alias) => {
+        const parts: string[] = [];
+        if (catIds?.length) {
+          // Use EXISTS subquery with actual table name to avoid entity alias ambiguity
+          parts.push(`(${alias} IN (SELECT "articleId" FROM article_categories WHERE "categoryId" IN (:...categoryIds)) OR EXISTS (SELECT 1 FROM articles WHERE id = ${alias} AND "categoryId" IN (:...legacyCategoryIds)))`);
+        }
+        if (subCatIds?.length) {
+          parts.push(`(${alias} IN (SELECT "articleId" FROM article_sub_categories WHERE "subCategoryId" IN (:...subCategoryIds)) OR EXISTS (SELECT 1 FROM articles WHERE id = ${alias} AND "subCategoryId" IN (:...legacySubCategoryIds)))`);
+        }
+        return parts.join(' OR ');
+      }, {
+        ...(catIds?.length && { categoryIds: catIds, legacyCategoryIds: catIds }),
+        ...(subCatIds?.length && { subCategoryIds: subCatIds, legacySubCategoryIds: subCatIds }),
       });
-      delete (query as any).subCategoryIds;
     }
 
     return this.service.findAllBase(query, { relations: this.RELATIONS });

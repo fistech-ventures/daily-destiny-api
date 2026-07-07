@@ -393,15 +393,15 @@ export class ArticleService extends BaseService<Article> {
       params.push(query.status);
     }
     if (query.categoryIds?.length) {
-      conditions.push(`a.id IN (SELECT "articleId" FROM article_categories WHERE "categoryId" = ANY($${paramIndex++}::uuid[]))`);
-      params.push(query.categoryIds);
+      conditions.push(`(a.id IN (SELECT "articleId" FROM article_categories WHERE "categoryId" = ANY($${paramIndex++}::uuid[])) OR a."categoryId" = ANY($${paramIndex++}::uuid[]))`);
+      params.push(query.categoryIds, query.categoryIds);
     } else if (query.categoryId) {
       conditions.push(`a."categoryId" = $${paramIndex++}`);
       params.push(query.categoryId);
     }
     if (query.subCategoryIds?.length) {
-      conditions.push(`a.id IN (SELECT "articleId" FROM article_sub_categories WHERE "subCategoryId" = ANY($${paramIndex++}::uuid[]))`);
-      params.push(query.subCategoryIds);
+      conditions.push(`(a.id IN (SELECT "articleId" FROM article_sub_categories WHERE "subCategoryId" = ANY($${paramIndex++}::uuid[])) OR a."subCategoryId" = ANY($${paramIndex++}::uuid[]))`);
+      params.push(query.subCategoryIds, query.subCategoryIds);
     } else if (query.subCategoryId) {
       conditions.push(`a."subCategoryId" = $${paramIndex++}`);
       params.push(query.subCategoryId);
@@ -524,19 +524,19 @@ export class ArticleService extends BaseService<Article> {
       queryBuilder.andWhere('article.status = :status', { status: query.status });
     }
 
-    // Apply other filters
+    // Apply other filters (check both join table and legacy columns)
     if (query.categoryIds?.length) {
       queryBuilder.andWhere(
-        'article.id IN (SELECT "articleId" FROM article_categories WHERE "categoryId" IN (:...categoryIds))',
-        { categoryIds: query.categoryIds },
+        '(article.id IN (SELECT "articleId" FROM article_categories WHERE "categoryId" IN (:...categoryIds)) OR article."categoryId" IN (:...legacyCategoryIds))',
+        { categoryIds: query.categoryIds, legacyCategoryIds: query.categoryIds },
       );
     } else if (query.categoryId) {
       queryBuilder.andWhere('article.categoryId = :categoryId', { categoryId: query.categoryId });
     }
     if (query.subCategoryIds?.length) {
       queryBuilder.andWhere(
-        'article.id IN (SELECT "articleId" FROM article_sub_categories WHERE "subCategoryId" IN (:...subCategoryIds))',
-        { subCategoryIds: query.subCategoryIds },
+        '(article.id IN (SELECT "articleId" FROM article_sub_categories WHERE "subCategoryId" IN (:...subCategoryIds)) OR article."subCategoryId" IN (:...legacySubCategoryIds))',
+        { subCategoryIds: query.subCategoryIds, legacySubCategoryIds: query.subCategoryIds },
       );
     } else if (query.subCategoryId) {
       queryBuilder.andWhere('article.subCategoryId = :subCategoryId', { subCategoryId: query.subCategoryId });
