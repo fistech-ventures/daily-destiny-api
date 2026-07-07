@@ -6,15 +6,15 @@ import { SuccessResponse } from '@src/app/types';
 import { asyncForEach, generateCode } from '@src/shared';
 import { DataSource, In, QueryRunner, Repository } from 'typeorm';
 import isUuidValidator from 'validator/lib/isUUID';
+import { Author } from '../../author/entities/author.entity';
+import { Category } from '../../category/entities/category.entity';
+import { SubCategory } from '../../category/entities/subCategory.entity';
 import { ENUM_ARTICLE_STATUS } from '../const';
 import { ArticleCreateDTO } from '../dtos/article/create.dto';
 import { ArticleMediaUpdateDTO, ArticleUpdateDTO } from '../dtos/article/update.dto';
 import { Article } from '../entities/article.entity';
 import { ArticleMedia } from '../entities/articleMedia.entity';
 import { ArticleMediaService } from './articleMedia.service';
-import { Category } from '../../category/entities/category.entity';
-import { SubCategory } from '../../category/entities/subCategory.entity';
-import { Author } from '../../author/entities/author.entity';
 
 @Injectable()
 export class ArticleService extends BaseService<Article> {
@@ -265,11 +265,11 @@ export class ArticleService extends BaseService<Article> {
         await this.handleArticleLocations(queryRunner, id, finalLocations);
       }
 
-      const articleToUpdate = await queryRunner.manager.findOne(Article, { 
+      const articleToUpdate = await queryRunner.manager.findOne(Article, {
         where: { id },
         relations: ['categories', 'subCategories'],
       });
-      
+
       // Handle multiple categories on the loaded entity directly
       if ((categoryIds ?? []).length > 0) {
         const categories = await this._categoryRepo.findBy({ id: In(categoryIds) });
@@ -283,7 +283,7 @@ export class ArticleService extends BaseService<Article> {
         articleToUpdate.subCategories = subCategories;
         updateData['subCategoryId'] = subCategoryIds[0]; // Set first subCategory as primary for backward compat
       }
-      
+
       Object.assign(articleToUpdate, updateData);
       await queryRunner.manager.save(articleToUpdate);
 
@@ -444,7 +444,7 @@ export class ArticleService extends BaseService<Article> {
     // Get total count using raw SQL
     const countResult = await this.dataSource.query(
       `SELECT COUNT(*) as total FROM articles a
-       INNER JOIN article_popularity ap ON ap."articleId" = a.id
+       LEFT JOIN article_popularity ap ON ap."articleId" = a.id
        WHERE ${whereClause}`,
       params,
     );
@@ -457,9 +457,9 @@ export class ArticleService extends BaseService<Article> {
     // Get paginated article IDs ordered by popularity score
     const idRows = await this.dataSource.query(
       `SELECT a.id FROM articles a
-       INNER JOIN article_popularity ap ON ap."articleId" = a.id
+       LEFT JOIN article_popularity ap ON ap."articleId" = a.id
        WHERE ${whereClause}
-       ORDER BY ap.score DESC, a."createdAt" DESC
+       ORDER BY COALESCE(ap.score, 0) DESC, a."createdAt" DESC
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
       [...params, limit, skip],
     );
