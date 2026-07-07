@@ -20,7 +20,7 @@ export class ArticleWebController {
     private readonly popularService: ArticlePopularityService,
   ) { }
 
-  RELATIONS: FindOptionsRelations<Article> = { author: true, category: true, subCategory: true, medias: true, locations: { location: true } };
+  RELATIONS: FindOptionsRelations<Article> = { author: true, category: true, categories: true, subCategory: true, subCategories: true, medias: true, locations: { location: true } };
 
   @Public()
   @Get()
@@ -28,11 +28,21 @@ export class ArticleWebController {
     query['isActive'] = true;
     query['status'] = ENUM_ARTICLE_STATUS.PUBLISHED;
 
-    // Handle date range filtering (startDate / endDate)
-    const startDate = (query as any).startDate;
-    const endDate = (query as any).endDate;
+    // Handle date filtering (startDate / endDate / date)
+    let startDate = (query as any).startDate;
+    let endDate = (query as any).endDate;
+    const date = (query as any).date;
     delete (query as any).startDate;
     delete (query as any).endDate;
+    delete (query as any).date;
+
+    // If single date is provided, convert to full day range (UTC, overrides startDate/endDate)
+    if (date) {
+      const startOfDay = new Date(date + 'T00:00:00.000Z');
+      const endOfDay = new Date(date + 'T23:59:59.999Z');
+      startDate = startOfDay.toISOString();
+      endDate = endOfDay.toISOString();
+    }
 
     // Handle location-based filtering
     if (query.divisionId || query.districtId || query.upazillaId || query.unionId || query.locationId) {
@@ -79,6 +89,23 @@ export class ArticleWebController {
       });
     }
     delete query?.topics
+
+    // Handle categoryIds array filter via join table
+    if (query.categoryIds?.length) {
+      query['id'] = Raw((alias) => `${alias} IN (SELECT "articleId" FROM article_categories WHERE "categoryId" IN (:...categoryIds))`, {
+        categoryIds: query.categoryIds,
+      });
+      delete (query as any).categoryIds;
+    }
+
+    // Handle subCategoryIds array filter via join table
+    if (query.subCategoryIds?.length) {
+      query['id'] = Raw((alias) => `${alias} IN (SELECT "articleId" FROM article_sub_categories WHERE "subCategoryId" IN (:...subCategoryIds))`, {
+        subCategoryIds: query.subCategoryIds,
+      });
+      delete (query as any).subCategoryIds;
+    }
+
     return this.service.findAllBase(query, { relations: this.RELATIONS });
   }
 

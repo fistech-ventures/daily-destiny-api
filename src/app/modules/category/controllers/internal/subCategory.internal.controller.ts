@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SuccessResponse } from '@src/app/types';
-import { FindOptionsRelations } from 'typeorm';
+import { FindOptionsRelations, In } from 'typeorm';
 import { SubCategoryCreateDTO } from '../../dtos/subCategory/create.dto';
 import { SubCategoryFilterDTO } from '../../dtos/subCategory/filter.dto';
 import { SubCategoryUpdateDTO } from '../../dtos/subCategory/update.dto';
@@ -21,6 +21,13 @@ export class SubCategoryInternalController {
   async findAll(@Query() query: SubCategoryFilterDTO): Promise<SuccessResponse<SubCategory[]>> {
     query['sortBy'] = 'position';
     query['sortOrder'] = 'asc';
+
+    // Handle multiple categoryIds
+    if (query.categoryIds?.length) {
+      (query as any).categoryId = In(query.categoryIds);
+      delete (query as any).categoryIds;
+    }
+
     return this.service.findAllBase(query, {
       relations: this.RELATIONS,
       select: {
