@@ -234,20 +234,24 @@ export class ArticleUpdateDTO {
   readonly authorId!: string;
 
   @ApiProperty({
-    type: String,
+    type: [String],
     required: false,
-    example: 'category uuid',
+    example: ['category-uuid-1', 'category-uuid-2'],
+    description: 'Array of category UUIDs',
   })
   @IsOptional()
-  readonly categoryId!: string;
+  @IsArray()
+  readonly categoryIds!: string[];
 
   @ApiProperty({
-    type: String,
+    type: [String],
     required: false,
-    example: 'sub category uuid',
+    example: ['sub-category-uuid-1', 'sub-category-uuid-2'],
+    description: 'Array of sub category UUIDs',
   })
   @IsOptional()
-  readonly subCategoryId!: string;
+  @IsArray()
+  readonly subCategoryIds!: string[];
 
   @ApiProperty({
     type: [String],
