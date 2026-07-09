@@ -86,6 +86,18 @@ export class ArticleService extends BaseService<Article> {
         data['publishedBy'] = authUser;
         data['publishedAt'] = new Date().toString()
       } else delete data?.status
+      // Handle position - shift existing articles to make room for the new article
+      if (data.position !== undefined && data.position !== null) {
+        if (data.position < 0) {
+          throw new BadRequestException('Position must be a non-negative number');
+        }
+        // Shift all articles at >= newPosition down by 1
+        await queryRunner.manager.query(
+          `UPDATE articles SET position = position + 1 WHERE position >= $1`,
+          [data.position],
+        );
+      }
+
       const created = this._repo.create(data);
       // Attach categories and subCategories for the ManyToMany relation
       if (categories.length > 0) {
@@ -296,6 +308,7 @@ export class ArticleService extends BaseService<Article> {
         if (oldPosition !== newPosition) {
           if (oldPosition === null || oldPosition === undefined) {
             // Article didn't have a position - shift everything at >= newPosition down by 1
+            // (excluding this article since it hasn't been assigned a position yet)
             await queryRunner.manager.query(
               `UPDATE articles SET position = position + 1 WHERE position >= $1 AND id != $2`,
               [newPosition, id],
