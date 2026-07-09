@@ -284,6 +284,38 @@ export class ArticleService extends BaseService<Article> {
         updateData['subCategoryId'] = subCategoryIds[0]; // Set first subCategory as primary for backward compat
       }
 
+      // Handle position reordering - shift other articles when position is updated
+      if (updateData.position !== undefined && updateData.position !== null) {
+        const oldPosition = articleData.position;
+        const newPosition = updateData.position;
+
+        if (newPosition < 0) {
+          throw new BadRequestException('Position must be a non-negative number');
+        }
+
+        if (oldPosition !== newPosition) {
+          if (oldPosition === null || oldPosition === undefined) {
+            // Article didn't have a position - shift everything at >= newPosition down by 1
+            await queryRunner.manager.query(
+              `UPDATE articles SET position = position + 1 WHERE position >= $1 AND id != $2`,
+              [newPosition, id],
+            );
+          } else if (newPosition < oldPosition) {
+            // Moving up (e.g., position 10 -> 5): shift positions 5 through 9 down to 6 through 10
+            await queryRunner.manager.query(
+              `UPDATE articles SET position = position + 1 WHERE position >= $1 AND position < $2 AND id != $3`,
+              [newPosition, oldPosition, id],
+            );
+          } else if (newPosition > oldPosition) {
+            // Moving down (e.g., position 5 -> 10): shift positions 6 through 10 up to 5 through 9
+            await queryRunner.manager.query(
+              `UPDATE articles SET position = position - 1 WHERE position > $1 AND position <= $2 AND id != $3`,
+              [oldPosition, newPosition, id],
+            );
+          }
+        }
+      }
+
       Object.assign(articleToUpdate, updateData);
       await queryRunner.manager.save(articleToUpdate);
 
