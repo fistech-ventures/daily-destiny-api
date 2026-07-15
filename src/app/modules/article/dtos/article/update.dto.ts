@@ -170,6 +170,14 @@ export class ArticleUpdateDTO {
   @ApiProperty({
     type: String,
     required: false,
+    example: 'article hanger text',
+  })
+  @IsOptional()
+  readonly hanger!: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
     example: 'https://en.com/article-x-cover.png',
   })
   @IsOptional()
