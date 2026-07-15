@@ -480,12 +480,12 @@ export class ArticleService extends BaseService<Article> {
       params.push(`%${query.hanger}%`);
     }
     if (query._startDate) {
-      conditions.push(`a."createdAt" >= $${paramIndex++}`);
-      params.push(new Date(query._startDate));
+      conditions.push(`CAST(a.date AS date) >= CAST($${paramIndex++} AS date)`);
+      params.push(query._startDate);
     }
     if (query._endDate) {
-      conditions.push(`a."createdAt" <= $${paramIndex++}`);
-      params.push(new Date(query._endDate));
+      conditions.push(`CAST(a.date AS date) <= CAST($${paramIndex++} AS date)`);
+      params.push(query._endDate);
     }
 
     const whereClause = conditions.join(' AND ');
@@ -612,10 +612,10 @@ export class ArticleService extends BaseService<Article> {
       queryBuilder.andWhere('article.hanger ILIKE :hanger', { hanger: `%${query.hanger}%` });
     }
     if (query._startDate) {
-      queryBuilder.andWhere('article.createdAt >= :_startDate', { _startDate: new Date(query._startDate) });
+      queryBuilder.andWhere('CAST(article.date AS date) >= CAST(:_startDate AS date)', { _startDate: query._startDate });
     }
     if (query._endDate) {
-      queryBuilder.andWhere('article.createdAt <= :_endDate', { _endDate: new Date(query._endDate) });
+      queryBuilder.andWhere('CAST(article.date AS date) <= CAST(:_endDate AS date)', { _endDate: query._endDate });
     }
 
     // Pagination
