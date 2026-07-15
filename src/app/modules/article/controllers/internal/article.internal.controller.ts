@@ -33,7 +33,7 @@ export class ArticleInternalController {
     delete (query as any).endDate;
     delete (query as any).date;
 
-    // If single date is provided, convert to full day range (UTC, overrides startDate/endDate)
+    // If single date is provided, convert to full day range for ISO format dates
     if (date) {
       const startOfDay = new Date(date + 'T00:00:00.000Z');
       const endOfDay = new Date(date + 'T23:59:59.999Z');
@@ -69,16 +69,17 @@ export class ArticleInternalController {
 
     // For the default findAllBase path, add date filter for date range
     // Filter by the 'date' column (article date) instead of createdAt
+    // Use SQL date casting to handle mixed formats (YYYY-MM-DD and ISO)
     if (startDate || endDate) {
       delete (query as any).date;
       (query as any)['date'] = Raw((alias) => {
         const parts: string[] = [];
-        if (startDate) parts.push(`${alias} >= :startDate`);
-        if (endDate) parts.push(`${alias} <= :endDate`);
+        if (startDate) parts.push(`CAST(${alias} AS date) >= CAST(:startDate AS date)`);
+        if (endDate) parts.push(`CAST(${alias} AS date) <= CAST(:endDate AS date)`);
         return parts.join(' AND ');
       }, {
-        ...(startDate && { startDate }),
-        ...(endDate && { endDate }),
+        ...(startDate && { startDate: String(startDate) }),
+        ...(endDate && { endDate: String(endDate) }),
       });
     }
 
