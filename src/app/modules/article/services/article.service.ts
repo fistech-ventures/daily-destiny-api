@@ -475,6 +475,10 @@ export class ArticleService extends BaseService<Article> {
       conditions.push(`a.tags @> $${paramIndex++}`);
       params.push(JSON.stringify(query.topics));
     }
+    if (query.hanger) {
+      conditions.push(`a.hanger ILIKE $${paramIndex++}`);
+      params.push(`%${query.hanger}%`);
+    }
     if (query._startDate) {
       conditions.push(`a."createdAt" >= $${paramIndex++}`);
       params.push(new Date(query._startDate));
@@ -603,6 +607,9 @@ export class ArticleService extends BaseService<Article> {
     }
     if (query.topics?.length) {
       queryBuilder.andWhere(`article.tags @> :tags`, { tags: JSON.stringify(query.topics) });
+    }
+    if (query.hanger) {
+      queryBuilder.andWhere('article.hanger ILIKE :hanger', { hanger: `%${query.hanger}%` });
     }
     if (query._startDate) {
       queryBuilder.andWhere('article.createdAt >= :_startDate', { _startDate: new Date(query._startDate) });

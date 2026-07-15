@@ -4,9 +4,19 @@ export class AddCountryToLocationTypeEnum1736640000000 implements MigrationInter
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Add 'country' to the enum type for locations.type column
     // PostgreSQL allows adding values to enums if they're not used in constraints
-    await queryRunner.query(`
-      ALTER TYPE "enum_locations_type" ADD VALUE IF NOT EXISTS 'country';
+    // First check if the enum type exists
+    const enumExists = await queryRunner.query(`
+      SELECT EXISTS (
+        SELECT 1 FROM pg_type 
+        WHERE typname = 'enum_locations_type'
+      );
     `);
+
+    if (enumExists[0].exists) {
+      await queryRunner.query(`
+        ALTER TYPE "enum_locations_type" ADD VALUE IF NOT EXISTS 'country';
+      `);
+    }
   }
 
   public async down(_queryRunner: QueryRunner): Promise<void> {
