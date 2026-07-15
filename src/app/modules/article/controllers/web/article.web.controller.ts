@@ -70,16 +70,18 @@ export class ArticleWebController {
       });
     }
 
-    // For the default findAllBase path, add createdAt Raw filter for date range
+    // For the default findAllBase path, add date filter for date range
+    // Filter by the 'date' column (article date) instead of createdAt
     if (startDate || endDate) {
-      query['createdAt'] = Raw((alias) => {
+      delete (query as any).date;
+      (query as any)['date'] = Raw((alias) => {
         const parts: string[] = [];
         if (startDate) parts.push(`${alias} >= :startDate`);
         if (endDate) parts.push(`${alias} <= :endDate`);
         return parts.join(' AND ');
       }, {
-        ...(startDate && { startDate: new Date(startDate) }),
-        ...(endDate && { endDate: new Date(endDate) }),
+        ...(startDate && { startDate }),
+        ...(endDate && { endDate }),
       });
     }
 
