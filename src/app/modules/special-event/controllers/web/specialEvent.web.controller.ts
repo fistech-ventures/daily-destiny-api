@@ -9,7 +9,7 @@ import { SpecialEventService } from '../../services/specialEvent.service';
 @ApiTags('Special Event')
 @Controller('web/special-events')
 export class SpecialEventWebController {
-  constructor(private readonly service: SpecialEventService) {}
+  constructor(private readonly service: SpecialEventService) { }
 
   RELATIONS = { articles: true };
 
@@ -18,7 +18,23 @@ export class SpecialEventWebController {
   @ApiOperation({ summary: 'Get all active special events' })
   async findAll(@Query() query: SpecialEventFilterDTO): Promise<SuccessResponse<SpecialEvent[]>> {
     query['isActive'] = 'true' as any;
-    return this.service.findAllBase(query, { relations: this.RELATIONS });
+    return this.service.findAllBase(query, {
+      relations: this.RELATIONS, select: {
+        id: true,
+        title: true,
+        slug: true,
+        bannerImage: true,
+        isActive: true,
+        articles: {
+          id: true,
+          title: true,
+          code: true,
+          slug: true,
+          excerpt: true,
+          coverImage: true,
+        }
+      }
+    });
   }
 
   @Public()
