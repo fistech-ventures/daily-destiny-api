@@ -479,6 +479,10 @@ export class ArticleService extends BaseService<Article> {
       conditions.push(`a.hanger ILIKE $${paramIndex++}`);
       params.push(`%${query.hanger}%`);
     }
+    if (query.shoulder) {
+      conditions.push(`a.shoulder ILIKE $${paramIndex++}`);
+      params.push(`%${query.shoulder}%`);
+    }
     if (query._startDate) {
       conditions.push(`CAST(a.date AS date) >= CAST($${paramIndex++} AS date)`);
       params.push(query._startDate);
@@ -610,6 +614,9 @@ export class ArticleService extends BaseService<Article> {
     }
     if (query.hanger) {
       queryBuilder.andWhere('article.hanger ILIKE :hanger', { hanger: `%${query.hanger}%` });
+    }
+    if (query.shoulder) {
+      queryBuilder.andWhere('article.shoulder ILIKE :shoulder', { shoulder: `%${query.shoulder}%` });
     }
     if (query._startDate) {
       queryBuilder.andWhere('CAST(article.date AS date) >= CAST(:_startDate AS date)', { _startDate: query._startDate });

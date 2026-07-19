@@ -178,6 +178,14 @@ export class ArticleUpdateDTO {
   @ApiProperty({
     type: String,
     required: false,
+    example: 'article shoulder text',
+  })
+  @IsOptional()
+  readonly shoulder!: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
     example: 'https://en.com/article-x-cover.png',
   })
   @IsOptional()
