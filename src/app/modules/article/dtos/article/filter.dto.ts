@@ -28,6 +28,14 @@ export class ArticleFilterDTO extends BaseFilterDTO {
   @ApiProperty({
     type: String,
     required: false,
+    description: 'Filter by shoulder text',
+  })
+  @IsOptional()
+  readonly shoulder?: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
     description: 'category uuid (single) - kept for backward compatibility',
   })
   @IsOptional()

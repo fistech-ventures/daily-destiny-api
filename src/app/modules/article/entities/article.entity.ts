@@ -45,6 +45,9 @@ export class Article extends BaseEntity {
   @Column({ type: ENUM_COLUMN_TYPES.TEXT, nullable: true })
   hanger?: string;
 
+  @Column({ type: ENUM_COLUMN_TYPES.TEXT, nullable: true })
+  shoulder?: string;
+
   @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, nullable: false })
   language?: string;
 
