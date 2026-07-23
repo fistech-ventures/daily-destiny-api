@@ -39,4 +39,7 @@ export class Ad extends BaseEntity {
 
   @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, nullable: true })
   position?: string;
+
+  @Column({ type: ENUM_COLUMN_TYPES.JSONB, nullable: true })
+  categories?: string[];
 }

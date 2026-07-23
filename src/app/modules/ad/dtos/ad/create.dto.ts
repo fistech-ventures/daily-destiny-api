@@ -97,4 +97,13 @@ export class AdCreateDTO {
   @IsOptional()
   @IsBoolean()
   readonly isActive!: boolean;
+
+  @ApiProperty({
+    type: [String],
+    required: false,
+    example: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001'],
+    description: 'Array of category IDs where the ad will be shown (used when pageType is categoryPage)',
+  })
+  @IsOptional()
+  readonly categories!: string[];
 }

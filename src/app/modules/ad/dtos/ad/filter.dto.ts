@@ -55,4 +55,13 @@ export class AdFilterDTO {
   @IsOptional()
   @IsString()
   readonly position!: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'Filter by category ID (finds ads containing this category ID in their categories array)',
+  })
+  @IsOptional()
+  @IsString()
+  readonly categoryId!: string;
 }
