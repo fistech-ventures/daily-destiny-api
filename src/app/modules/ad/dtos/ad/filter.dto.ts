@@ -41,8 +41,18 @@ export class AdFilterDTO {
   @ApiProperty({
     type: String,
     required: false,
-    description: 'request uuid',
+    description: 'Filter by page type (e.g., homePage, recentPage, videoPage, epaperPage, galleryDetailsPage, categoryPage)',
   })
   @IsOptional()
-  readonly requestId!: string;
+  @IsString()
+  readonly pageType!: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'Filter by position on the page (e.g., Home-TopBanner, Lead-Right, Area-Under, Mid-Banner, Footer-Up-Banner, Right-Sidebar, etc.)',
+  })
+  @IsOptional()
+  @IsString()
+  readonly position!: string;
 }

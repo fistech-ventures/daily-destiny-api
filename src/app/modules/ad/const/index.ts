@@ -8,6 +8,7 @@ export enum ENUM_AD_TYPE {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO',
   EMBEDED = 'EMBEDED',
+  ANIMATION = 'ANIMATION',
 }
 
 export enum ENUM_AD_PLACEMENT {
