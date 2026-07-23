@@ -1,9 +1,7 @@
 import { BaseEntity } from '@src/app/base';
 import { ENUM_COLUMN_TYPES, ENUM_TABLE_NAMES } from '@src/shared';
-import { Type } from 'class-transformer';
-import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
+import { Column, Entity } from 'typeorm';
 import { ENUM_AD_STATUS } from '../const';
-import { AdRequest } from './adRequest.entity';
 
 @Entity(ENUM_TABLE_NAMES.ADS, { orderBy: { createdAt: 'DESC' } })
 export class Ad extends BaseEntity {
@@ -36,11 +34,9 @@ export class Ad extends BaseEntity {
   @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, nullable: true })
   endDate?: string;
 
-  @ManyToOne(() => AdRequest, { onDelete: 'CASCADE' })
-  @Type(() => AdRequest)
-  request?: AdRequest;
+  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, nullable: true })
+  pageType?: string;
 
-  @RelationId((e: Ad) => e.request)
-  @Column({ nullable: false })
-  requestId?: string;
+  @Column({ type: ENUM_COLUMN_TYPES.VARCHAR, nullable: true })
+  position?: string;
 }

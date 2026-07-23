@@ -69,18 +69,28 @@ export class AdUpdateDTO {
   readonly endDate!: string;
 
   @ApiProperty({
+    type: String,
+    required: false,
+    example: 'homePage',
+    description: 'Page type where the ad will be displayed (e.g., homePage, recentPage, videoPage, epaperPage, galleryDetailsPage, categoryPage)',
+  })
+  @IsOptional()
+  readonly pageType!: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    example: 'Home-TopBanner',
+    description: 'Position on the page (e.g., Home-TopBanner, Lead-Right, Area-Under, Mid-Banner, Footer-Up-Banner, Right-Sidebar, etc.)',
+  })
+  @IsOptional()
+  readonly position!: string;
+
+  @ApiProperty({
     type: Boolean,
     required: false,
     example: true,
   })
   @IsOptional()
   readonly isActive!: boolean;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    example: 'request uuid',
-  })
-  @IsOptional()
-  readonly requestId!: string;
 }

@@ -11,7 +11,7 @@ import { AdService } from '../../services/ad.service';
 @ApiBearerAuth()
 @Controller('web/ads')
 export class AdWebController {
-  constructor(private readonly service: AdService) {}
+  constructor(private readonly service: AdService) { }
 
   RELATIONS: FindOptionsRelations<Ad> = {};
 
