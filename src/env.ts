@@ -76,6 +76,13 @@ export const ENV = {
     serviceKey: process.env.SUPABASE_SERVICE_KEY,
     bucket: process.env.SUPABASE_BUCKET,
   },
+  r2: {
+    accountId: process.env.R2_ACCOUNT_ID,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    bucketName: process.env.R2_BUCKET_NAME,
+    publicDomain: process.env.R2_PUBLIC_DOMAIN,
+  },
   mail: {
     gmail: {
       clientId: '373266192637-l50tghol2up6unt1d8b5g8mp30b6cfbm.apps.googleusercontent.com',

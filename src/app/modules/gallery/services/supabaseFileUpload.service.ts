@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseUploadHelper } from '@src/app/helpers/supabaseUpload.helper';
+import { R2UploadHelper } from '@src/app/helpers/r2Upload.helper';
 import { IFileMeta } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
 import { ENV } from '@src/env';
@@ -17,7 +17,7 @@ export interface IFileResponse {
 
 @Injectable()
 export class SupabaseFileUploadService {
-  constructor(private readonly supabaseHelper: SupabaseUploadHelper) { }
+  constructor(private readonly r2Helper: R2UploadHelper) { }
 
   async uploadToSupabase(data: { file: IFileMeta; folder?: string }): Promise<IFileResponse> {
     try {
@@ -44,7 +44,7 @@ export class SupabaseFileUploadService {
       const fileKey = `${ENV.env}/${folder}/${fileName}`;
       const fileBuffer = await fs.promises.readFile(filePath);
 
-      const url = await this.supabaseHelper.uploadBinary(folder, fileBuffer, fileName, file.mimetype);
+      const url = await this.r2Helper.uploadBinary(folder, fileBuffer, fileName, file.mimetype);
 
       if (url) {
         try {
@@ -84,7 +84,7 @@ export class SupabaseFileUploadService {
 
   async deleteFromSupabase(key: string): Promise<void> {
     try {
-      await this.supabaseHelper.deleteFile(key);
+      await this.r2Helper.deleteFile(key);
     } catch (error) {
       console.error("🚀 ~ SupabaseFileUploadService ~ deleteFromSupabase ~ error:", error)
     }
