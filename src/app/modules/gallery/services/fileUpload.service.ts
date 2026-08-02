@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseUploadHelper } from '@src/app/helpers/supabaseUpload.helper';
+import { R2UploadHelper } from '@src/app/helpers/r2Upload.helper';
 import { IFileMeta } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
 import { ENV } from '@src/env';
@@ -18,7 +18,7 @@ export interface IFileResponse {
 
 @Injectable()
 export class FileUploadService {
-  constructor(private readonly supabaseHelper: SupabaseUploadHelper) { }
+  constructor(private readonly r2Helper: R2UploadHelper) { }
 
   BASE = join(process.cwd(), 'uploads/images');
 
@@ -76,7 +76,7 @@ export class FileUploadService {
       const fileKey = `${ENV.env}/${folder}/${fileName}`;
       const fileBuffer = await fs.promises.readFile(filePath);
 
-      const url = await this.supabaseHelper.uploadBinary(folder, fileBuffer, fileName, file.mimetype);
+      const url = await this.r2Helper.uploadBinary(folder, fileBuffer, fileName, file.mimetype);
 
       if (url) {
         try {
@@ -96,7 +96,7 @@ export class FileUploadService {
   }
 
   async deleteFromSpace(key: string): Promise<void> {
-    await this.supabaseHelper.deleteFile(key);
+    await this.r2Helper.deleteFile(key);
   }
 
   async uploadFacebookProfilePic(imageUrl: string): Promise<string> {
@@ -111,7 +111,7 @@ export class FileUploadService {
     const fileName = `${Date.now()}.jpg`;
     const folder = 'profiles';
 
-    const url = await this.supabaseHelper.uploadBinary(folder, response.data, fileName, 'image/jpeg');
+    const url = await this.r2Helper.uploadBinary(folder, response.data, fileName, 'image/jpeg');
     return url;
   }
 

@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { BcryptHelper, EmailHelper } from '@src/app/helpers';
-import { SupabaseUploadHelper } from '@src/app/helpers/supabaseUpload.helper';
+import { R2UploadHelper } from '@src/app/helpers/r2Upload.helper';
 import { IAuthUser, ILginResponse } from '@src/app/interfaces';
 import { SuccessResponse } from '@src/app/types';
 import { ENV } from '@src/env';
@@ -60,7 +60,7 @@ export class AuthService {
     private readonly emailService: EmailService,
     private readonly smsService: SmsService,
     private readonly globalConfigService: GlobalConfigService,
-    private readonly supabaseUploadHelper: SupabaseUploadHelper,
+    private readonly r2UploadHelper: R2UploadHelper,
   ) { }
 
   async loginResponse(
@@ -598,7 +598,7 @@ export class AuthService {
 
     if (!user) {
       const avatarUrl = responseData?.picture?.data?.url
-        ? await this.supabaseUploadHelper.downloadAndUploadToSupabase({
+        ? await this.r2UploadHelper.downloadAndUploadToR2({
           fileUrl: responseData?.picture?.data?.url,
           fileName: `${Date.now()}`,
         })
