@@ -6,8 +6,9 @@ import { FileUploadHelper } from './fileUpload.helper';
 import { HtmlHelper } from './html.helper';
 import { JWTHelper } from './jwt.helper';
 import { SupabaseUploadHelper } from './supabaseUpload.helper';
+import { R2UploadHelper } from './r2Upload.helper';
 
-const HELPERS = [BcryptHelper, JWTHelper, EmailHelper, HtmlHelper, FileUploadHelper, SupabaseUploadHelper];
+const HELPERS = [BcryptHelper, JWTHelper, EmailHelper, HtmlHelper, FileUploadHelper, SupabaseUploadHelper, R2UploadHelper];
 const modules = [HttpModule];
 
 @Global()
