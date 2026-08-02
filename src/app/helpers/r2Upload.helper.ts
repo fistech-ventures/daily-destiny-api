@@ -8,8 +8,6 @@ import { ENV } from '@src/env';
 
 @Injectable()
 export class R2UploadHelper {
-  private s3Client: S3Client;
-
   constructor(private readonly http: HttpService) {
     this.s3Client = new S3Client({
       region: 'auto',
@@ -20,6 +18,8 @@ export class R2UploadHelper {
       },
     });
   }
+
+  private s3Client: S3Client;
 
   public async uploadBinary(
     folder = 'media',
