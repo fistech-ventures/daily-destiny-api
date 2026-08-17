@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
-import { ArticlePopularity } from '../entities/articlePopularity.entity';
+import { DataSource, Repository } from 'typeorm';
 import { ArticleEvent, EVENT_TYPE, EventType } from '../entities/articleEvent.entity';
+import { ArticlePopularity } from '../entities/articlePopularity.entity';
 
 @Injectable()
 export class ArticlePopularityService {
@@ -24,12 +24,27 @@ export class ArticlePopularityService {
       throw new BadRequestException(`Invalid event type. Must be one of: ${Object.values(EVENT_TYPE).join(', ')}`);
     }
 
-    const event = new ArticleEvent();
-    event.articleId = articleId;
-    event.eventType = eventType;
-    event.sessionId = sessionId;
+    if (!articleId) {
+      this.logger.warn('Attempted to record event without articleId');
+      throw new BadRequestException('articleId is required');
+    }
 
-    await this.dataSource.getRepository(ArticleEvent).save(event);
+    try {
+      const event = new ArticleEvent();
+      event.articleId = articleId;
+      event.eventType = eventType;
+      event.sessionId = sessionId;
+
+      await this.dataSource.getRepository(ArticleEvent).save(event);
+    } catch (error) {
+      this.logger.error('Failed to record article event', {
+        articleId,
+        eventType,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      throw error;
+    }
   }
 
   /**
@@ -42,6 +57,12 @@ export class ArticlePopularityService {
     this.logger.log('Computing article popularity scores...');
 
     try {
+      // Check database connection before proceeding
+      if (!this.dataSource.isInitialized) {
+        this.logger.error('Database connection is not initialized');
+        return;
+      }
+
       // Query events from the last 24 hours, grouped by article and event type
       const rawScores = await this.dataSource.query(
         `
@@ -67,7 +88,13 @@ export class ArticlePopularityService {
       await queryRunner.startTransaction();
 
       try {
+        let successCount = 0;
         for (const row of rawScores) {
+          if (!row.articleId) {
+            this.logger.warn('Skipping row with missing articleId');
+            continue;
+          }
+
           const viewCount = parseInt(row.viewCount, 10) || 0;
           const shareCount = parseInt(row.shareCount, 10) || 0;
           const score = viewCount * 1 + shareCount * 5;
@@ -83,18 +110,25 @@ export class ArticlePopularityService {
             },
             ['articleId'],
           );
+          successCount++;
         }
 
         await queryRunner.commitTransaction();
-        this.logger.log(`Popularity scores computed for ${rawScores.length} articles.`);
+        this.logger.log(`Popularity scores computed for ${successCount} articles.`);
       } catch (error) {
         await queryRunner.rollbackTransaction();
-        throw error;
+        this.logger.error('Failed to upsert popularity scores', {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
       } finally {
         await queryRunner.release();
       }
     } catch (error) {
-      this.logger.error('Failed to compute popularity scores', error);
+      this.logger.error('Failed to compute popularity scores', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
     }
   }
 
