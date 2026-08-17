@@ -3,3 +3,4 @@ dist
 environments/development.env
 dump-data
 *.dump
+config.bat
