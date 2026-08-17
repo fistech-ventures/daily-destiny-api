@@ -67,9 +67,9 @@ export class ArticlePopularityService {
       const rawScores = await this.dataSource.query(
         `
         SELECT
-          ae."articleId",
-          COUNT(*) FILTER (WHERE ae."eventType" = $1) AS "viewCount",
-          COUNT(*) FILTER (WHERE ae."eventType" = $2) AS "shareCount"
+          ae."articleId" as "articleId",
+          COUNT(*) FILTER (WHERE ae."eventType" = $1) as "viewCount",
+          COUNT(*) FILTER (WHERE ae."eventType" = $2) as "shareCount"
         FROM article_events ae
         WHERE ae."createdAt" >= NOW() - INTERVAL '24 hours'
         GROUP BY ae."articleId"
@@ -77,10 +77,15 @@ export class ArticlePopularityService {
         [EVENT_TYPE.VIEW, EVENT_TYPE.SHARE],
       );
 
+      this.logger.log(`Query returned ${rawScores?.length || 0} rows`);
+
       if (!rawScores?.length) {
         this.logger.log('No events found in the last 24 hours. Skipping popularity update.');
         return;
       }
+
+      // Log first row for debugging
+      this.logger.debug('First row data:', JSON.stringify(rawScores[0]));
 
       // Upsert scores into article_popularity table
       const queryRunner = this.dataSource.createQueryRunner();
@@ -90,8 +95,10 @@ export class ArticlePopularityService {
       try {
         let successCount = 0;
         for (const row of rawScores) {
+          this.logger.debug(`Processing row: ${JSON.stringify(row)}`);
+
           if (!row.articleId) {
-            this.logger.warn('Skipping row with missing articleId');
+            this.logger.warn('Skipping row with missing articleId', { row });
             continue;
           }
 
